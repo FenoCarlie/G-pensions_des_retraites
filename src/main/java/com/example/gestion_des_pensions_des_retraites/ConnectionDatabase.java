@@ -5,11 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConnectionDatabase {
-    private final String url = "jdbc:postgresql://localhost/gestion_des_pensions_des_retraites";
-    private final String user = "postgres";
-    private final String password = "1532";
+    private static final String url = "jdbc:postgresql://localhost/gestion_des_pensions_des_retraites";
+    private static final String user = "postgres";
+    private static final String password = "1532";
 
-    public Connection connect() {
+    public static Connection connect() {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url, user, password);

@@ -4,31 +4,28 @@ import javafx.scene.control.TextField;
 
 public class TarifaddController {
     @FXML
-    private TextField TfNumero;
+    private TextField tfNumero;
 
     @FXML
-    private TextField TfDiplome;
+    private TextField tfDiplome;
 
     @FXML
-    private TextField TfCategorie;
+    private TextField tfCategorie;
 
     @FXML
-    private TextField TfMontant;
+    private TextField tfMontant;
 
-    public String getNumero() {
-        return TfNumero.getText();
+    public Tarif getTarif() {
+        String numero = tfNumero.getText();
+        String diplome = tfDiplome.getText();
+        String categorie = tfCategorie.getText();
+        int montant = 0; // Valeur par défaut en cas de champ de saisie vide
+
+        if (!tfMontant.getText().isEmpty()) {
+            montant = Integer.parseInt(tfMontant.getText());
+        }
+
+        // Créer et retourner un objet Tarif avec les valeurs saisies dans les champs de saisie
+        return new Tarif(numero, diplome, categorie, montant);
     }
-
-    public String getDiplome() {
-        return TfDiplome.getText();
-    }
-
-    public String getCategorie() {
-        return TfCategorie.getText();
-    }
-
-    public String getMontant() {
-        return TfMontant.getText();
-    }
-
 }
