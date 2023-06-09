@@ -72,10 +72,10 @@
                   </TextField>
                </children>
             </GridPane>
-            <HBox alignment="CENTER" layoutY="275.0" prefHeight="65.0" prefWidth="418.0">
+            <HBox alignment="CENTER" cache="true" layoutY="275.0" prefHeight="65.0" prefWidth="418.0" style="-fx-spacing: 15px;">
                <children>
-                  <Button mnemonicParsing="false" text="Button" />
-                  <Button mnemonicParsing="false" text="Button" />
+                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="102.0" style="-fx-font-size: 20px;" text="Valider" />
+                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="102.0" style="-fx-font-size: 20px;" text="Annuler" />
                </children>
             </HBox>
          </children>
