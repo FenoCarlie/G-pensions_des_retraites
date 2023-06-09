@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="793.0" prefWidth="1464.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gestion_des_pensions_des_retraites.Controller">
+   <left>
+      <VBox prefHeight="639.0" prefWidth="186.0" style="-fx-background-color: #275a94;" BorderPane.alignment="CENTER">
+         <children>
+            <Button id="btnHome" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onMouseClicked="#home" prefHeight="53.0" prefWidth="214.0" style="-fx-background-color: #275a94; -fx-font-size: 150%; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-padding: 0px 0px 0px 30px;" text="Home">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@loger.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
+            </Button>
+            <Button id="btnTarif" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onMouseClicked="#tarif" prefHeight="53.0" prefWidth="214.0" style="-fx-background-color: #275a94; -fx-font-size: 150%; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-padding: 0px 0px 0px 30px;" text="Tarif">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@tarification.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
+            </Button>
+            <Button id="btnPersonne" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onMouseClicked="#personne" prefHeight="53.0" prefWidth="214.0" style="-fx-background-color: #275a94; -fx-font-size: 150%; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-padding: 0px 0px 0px 30px;" text="Personne">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@conjoint.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
+            </Button>
+            <Button id="btnPaye" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onMouseClicked="#paye" prefHeight="53.0" prefWidth="214.0" style="-fx-background-color: #275a94; -fx-font-size: 150%; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-padding: 0px 0px 0px 30px;" text="Paye">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@paiement-securise.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
+            </Button>
+            <Button id="btnPaye" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onMouseClicked="#conjoint" prefHeight="53.0" prefWidth="214.0" style="-fx-background-color: #275a94; -fx-font-size: 150%; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-padding: 0px 0px 0px 30px;" text="Conjoint">
+               <graphic>
+                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@paiement-securise.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <padding>
+                  <Insets left="30.0" />
+               </padding>
+            </Button>
+         </children>
+      </VBox>
+   </left>
+   <center>
+      <AnchorPane fx:id="ap" prefWidth="1293.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="1278.0" style="-fx-background-color: #1a3657;">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <padding>
+                  <Insets left="80.0" />
+               </padding>
+               <children>
+                  <Label prefHeight="40.0" prefWidth="177.0" text="Home" textFill="#949494">
+                     <font>
+                        <Font size="26.0" />
+                     </font>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Label>
+               </children>
+            </HBox>
+         </children></AnchorPane>
+   </center>
+   <top>
+      <HBox alignment="CENTER_LEFT" prefHeight="107.0" prefWidth="1325.0" style="-fx-background-color: #193b61;" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets left="30.0" />
+         </padding>
+         <children>
+            <Label graphicTextGap="20.0" prefHeight="45.0" prefWidth="573.0" style="-fx-text-fill: white;" text="Gestion des pensions des retraités" textFill="WHITE">
+               <graphic>
+                  <ImageView fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@signature%20(1).png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <font>
+                  <Font name="Monospaced Italic" size="18.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </top>
+</BorderPane>
