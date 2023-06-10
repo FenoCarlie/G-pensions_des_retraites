@@ -201,7 +201,7 @@ public class TarifController {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
                 // Récupérer les tarifs depuis la base de données
-                String query = "SELECT * FROM TARIF";
+                String query = "SELECT * FROM tarif";
                 PreparedStatement statement = conn.prepareStatement(query);
                 ResultSet resultSet = statement.executeQuery();
 
