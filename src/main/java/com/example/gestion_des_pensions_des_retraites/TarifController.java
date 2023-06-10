@@ -4,20 +4,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
 
 public class TarifController {
     @FXML
@@ -53,9 +50,52 @@ public class TarifController {
 
         // Récupérer les données des tarifs depuis la base de données
         loadDataFromDatabase();
+        // Gérer le clic droit sur la table
+        tbvTarifs.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.SECONDARY) {
+                showContextMenu(event);
+            }
+        });
     }
 
-    @FXML
+    private void loadDataFromDatabase() {
+        try {
+            ConnectionDatabase connectionDatabase = new ConnectionDatabase();
+            Connection conn = connectionDatabase.connect();
+
+            if (conn != null) {
+                System.out.println("La connexion à la base de données a été établie avec succès.");
+
+                // Récupérer les tarifs depuis la base de données
+                String query = "SELECT * FROM tarif";
+                PreparedStatement statement = conn.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery();
+
+                // Effacer les données existantes
+                tarifs.clear();
+
+                // Parcourir les résultats et ajouter les tarifs à la liste
+                while (resultSet.next()) {
+                    String numero = resultSet.getString("num_tarif");
+                    String diplome = resultSet.getString("diplome");
+                    String categorie = resultSet.getString("categorie");
+                    int montant = resultSet.getInt("montant");
+
+                    Tarif tarif = new Tarif(numero, diplome, categorie, montant);
+                    tarifs.add(tarif);
+                }
+
+                resultSet.close();
+                statement.close();
+                conn.close();
+            } else {
+                showErrorMessage("Échec de la connexion à la base de données.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void ajouterTarif() {
         // Créer une nouvelle fenêtre de dialogue
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -118,36 +158,6 @@ public class TarifController {
         }
     }
 
-    private boolean validateInputs(String numero, String diplome, String categorie, String montant) {
-        // Vérifier si les champs sont vides
-        if (numero.isEmpty() || diplome.isEmpty() || categorie.isEmpty() || montant.isEmpty()) {
-            showErrorMessage("Veuillez remplir tous les champs.");
-            return false;
-        }
-
-        // Vérifier si le montant est un entier valide
-        try {
-            int montantValue = Integer.parseInt(montant);
-            if (montantValue <= 0) {
-                showErrorMessage("Le montant doit être un entier positif.");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            showErrorMessage("Le montant doit être un entier valide.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private void showErrorMessage(String message) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle("Erreur de saisie");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
     private void addToDatabase(Tarif tarif) {
         try {
             ConnectionDatabase connectionDatabase = new ConnectionDatabase();
@@ -192,7 +202,74 @@ public class TarifController {
         }
     }
 
-    private void loadDataFromDatabase() {
+    private boolean validateInputs(String numero, String diplome, String categorie, String montant) {
+        // Vérifier si les champs sont vides
+        if (numero.isEmpty() || diplome.isEmpty() || categorie.isEmpty() || montant.isEmpty()) {
+            showErrorMessage("Veuillez remplir tous les champs.");
+            return false;
+        }
+
+        // Vérifier si le montant est un entier valide
+        try {
+            int montantValue = Integer.parseInt(montant);
+            if (montantValue <= 0) {
+                showErrorMessage("Le montant doit être un entier positif.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showErrorMessage("Le montant doit être un entier valide.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void showContextMenu(MouseEvent event) {
+        Tarif selectedTarif = tbvTarifs.getSelectionModel().getSelectedItem();
+
+        if (selectedTarif != null) {
+            ContextMenu contextMenu = new ContextMenu();
+
+            // Option Modifier
+            MenuItem modifierMenuItem = new MenuItem("Modifier");
+            modifierMenuItem.setOnAction(e -> modifierTarif(selectedTarif));
+            contextMenu.getItems().add(modifierMenuItem);
+
+            // Option Supprimer
+            MenuItem supprimerMenuItem = new MenuItem("Supprimer");
+            supprimerMenuItem.setOnAction(e -> supprimerTarif(selectedTarif));
+            contextMenu.getItems().add(supprimerMenuItem);
+
+            contextMenu.show(tbvTarifs, event.getScreenX(), event.getScreenY());
+        }
+    }
+
+    private void modifierTarif (Tarif tarif) {
+
+    }
+
+    private void updateDatabase(Tarif tarif) {
+
+    }
+
+    private void supprimerTarif (Tarif tarif) {
+        Alert confirmationDialog = new Alert(AlertType.CONFIRMATION);
+        confirmationDialog.setTitle("Supprimer le tarif");
+        confirmationDialog.setHeaderText("Êtes-vous sûr de vouloir supprimer ce tarif ?");
+        confirmationDialog.setContentText("Cette action est irréversible.");
+
+        Optional<ButtonType> result = confirmationDialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            // L'utilisateur a confirmé la suppression, vous pouvez supprimer le tarif de la base de données ici
+            deleteFromDatabase(tarif);
+
+            // Recharger les données depuis la base de données
+            loadDataFromDatabase();
+        }
+
+    }
+
+    private void deleteFromDatabase(Tarif tarif) {
         try {
             ConnectionDatabase connectionDatabase = new ConnectionDatabase();
             Connection conn = connectionDatabase.connect();
@@ -200,27 +277,15 @@ public class TarifController {
             if (conn != null) {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
-                // Récupérer les tarifs depuis la base de données
-                String query = "SELECT * FROM tarif";
-                PreparedStatement statement = conn.prepareStatement(query);
-                ResultSet resultSet = statement.executeQuery();
+                // Supprimer le tarif
+                String deleteQuery = "DELETE FROM TARIF WHERE num_tarif = ?";
+                PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
+                deleteStatement.setString(1, tarif.getNumero());
+                deleteStatement.executeUpdate();
+                deleteStatement.close();
 
-                // Effacer les données existantes
-                tarifs.clear();
+                System.out.println("Le tarif a été supprimé avec succès.");
 
-                // Parcourir les résultats et ajouter les tarifs à la liste
-                while (resultSet.next()) {
-                    String numero = resultSet.getString("num_tarif");
-                    String diplome = resultSet.getString("diplome");
-                    String categorie = resultSet.getString("categorie");
-                    int montant = resultSet.getInt("montant");
-
-                    Tarif tarif = new Tarif(numero, diplome, categorie, montant);
-                    tarifs.add(tarif);
-                }
-
-                resultSet.close();
-                statement.close();
                 conn.close();
             } else {
                 showErrorMessage("Échec de la connexion à la base de données.");
@@ -228,5 +293,16 @@ public class TarifController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+
+
+    private void showErrorMessage(String message) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Erreur de saisie");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
