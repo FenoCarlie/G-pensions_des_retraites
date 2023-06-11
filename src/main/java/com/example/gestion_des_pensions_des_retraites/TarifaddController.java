@@ -15,7 +15,7 @@ public class TarifaddController {
     @FXML
     private TextField tfMontant;
 
-    public Tarif getTarif() {
+    public Tarifadd getTarif() {
         String numero = tfNumero.getText();
         String diplome = tfDiplome.getText();
         String categorie = tfCategorie.getText();
@@ -26,6 +26,6 @@ public class TarifaddController {
         }
 
         // Créer et retourner un objet Tarif avec les valeurs saisies dans les champs de saisie
-        return new Tarif(numero, diplome, categorie, montant);
+        return new Tarifadd(numero, diplome, categorie, montant);
     }
 }

@@ -6,16 +6,31 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Tarif {
+    private final IntegerProperty id;
     private final StringProperty numero;
     private final StringProperty diplome;
     private final StringProperty categorie;
     private final IntegerProperty montant;
 
-    public Tarif(String numero, String diplome, String categorie, int montant) {
+    public Tarif(int id, String numero, String diplome, String categorie, int montant) {
+        this.id = new SimpleIntegerProperty(id);
         this.numero = new SimpleStringProperty(numero);
         this.diplome = new SimpleStringProperty(diplome);
         this.categorie = new SimpleStringProperty(categorie);
         this.montant = new SimpleIntegerProperty(montant);
+    }
+
+    // Getters and setters for id
+    public int getId() {
+        return id.get();
+    }
+
+    public void setId(int id) {
+        this.id.set(id);
+    }
+
+    public IntegerProperty idProperty() {
+        return id;
     }
 
     // Getters and setters for numero

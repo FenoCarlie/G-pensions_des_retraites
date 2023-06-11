@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
@@ -42,24 +43,47 @@
          <tabs>
             <Tab text="Table">
                <content>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
-                     <children>
-                        <TableView fx:id="tbvTarifs" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1293.0" stylesheets="@styling.css">
-                           <columnResizePolicy>
-                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                           </columnResizePolicy>
-                           <columns>
-                              <TableColumn fx:id="TcNumero" prefWidth="221.0" text="Numero" />
-                              <TableColumn fx:id="TcDiplome" prefWidth="271.0" text="Diplome" />
-                              <TableColumn fx:id="TcCategorie" prefWidth="279.0" text="Categorie" />
-                              <TableColumn fx:id="TcMontant" prefWidth="389.0" text="Montant" />
-                           </columns>
-                        </TableView>
-                     </children>
-                  </HBox>
+                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
+                     <center>
+                        <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
+                           <center>
+                              <TableView fx:id="tbvTarifs" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1293.0" stylesheets="@styling.css" BorderPane.alignment="CENTER">
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                                 <columns>
+                                    <TableColumn fx:id="TcId" prefWidth="75.0" text="Id" />
+                                    <TableColumn fx:id="TcNumero" prefWidth="221.0" text="Numero" />
+                                    <TableColumn fx:id="TcDiplome" prefWidth="271.0" text="Diplome" />
+                                    <TableColumn fx:id="TcCategorie" prefWidth="279.0" text="Categorie" />
+                                    <TableColumn fx:id="TcMontant" prefWidth="389.0" text="Montant" />
+                                 </columns>
+                              </TableView>
+                           </center>
+                           <top>
+                              <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="46.0" prefWidth="1293.0" BorderPane.alignment="CENTER">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <padding>
+                                    <Insets left="80.0" />
+                                 </padding>
+                                 <children>
+                                    <TextField prefHeight="35.0" prefWidth="267.0" />
+                                    <Label prefHeight="18.0" prefWidth="49.0" />
+                                    <Button mnemonicParsing="false" prefHeight="30.0" prefWidth="124.0" text="Recherche" />
+                                 </children>
+                              </HBox>
+                           </top>
+                        </BorderPane>
+                     </center>
+                  </BorderPane>
                </content>
             </Tab>
          </tabs>
       </TabPane>
    </center>
+   <left>
+      <HBox prefHeight="504.0" prefWidth="0.0" BorderPane.alignment="CENTER" />
+   </left>
 </BorderPane>

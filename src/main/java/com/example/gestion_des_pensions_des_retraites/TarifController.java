@@ -1,27 +1,26 @@
 package com.example.gestion_des_pensions_des_retraites;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
 
 public class TarifController {
+
+    @FXML
+    private TableColumn<Tarif, Integer> TcId;
+
     @FXML
     private TableView<Tarif> tbvTarifs;
 
@@ -46,6 +45,7 @@ public class TarifController {
     private void initialize() {
         tarifs = FXCollections.observableArrayList();
 
+        TcId.setCellValueFactory(data -> data.getValue().idProperty().asObject());
         TcNumero.setCellValueFactory(data -> data.getValue().numeroProperty());
         TcDiplome.setCellValueFactory(data -> data.getValue().diplomeProperty());
         TcCategorie.setCellValueFactory(data -> data.getValue().categorieProperty());
@@ -75,7 +75,7 @@ public class TarifController {
             modifierMenuItem.setOnAction(e -> modifierTarif(selectedTarif));
             contextMenu.getItems().add(modifierMenuItem);
 
-            // Option Supprimer
+            // Option Suprimer
             MenuItem supprimerMenuItem = new MenuItem("Supprimer");
             supprimerMenuItem.setOnAction(e -> supprimerTarif(selectedTarif));
             contextMenu.getItems().add(supprimerMenuItem);
@@ -190,7 +190,7 @@ public class TarifController {
             String categorie = tfCategorie.getText();
             int montant = Integer.parseInt(tfMontant.getText());
 
-            Tarif tarif = new Tarif(numero, diplome, categorie, montant);
+            Tarifadd tarif = new Tarifadd(numero, diplome, categorie, montant);
             addToDatabase(tarif);
 
             // Recharger les données depuis la base de données
@@ -267,7 +267,7 @@ public class TarifController {
         alert.showAndWait();
     }
 
-    private void addToDatabase(Tarif tarif) {
+    private void addToDatabase(Tarifadd tarif) {
         try {
             ConnectionDatabase connectionDatabase = new ConnectionDatabase();
             Connection conn = connectionDatabase.connect();
@@ -329,12 +329,13 @@ public class TarifController {
 
                 // Parcourir les résultats et ajouter les tarifs à la liste
                 while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
                     String numero = resultSet.getString("num_tarif");
                     String diplome = resultSet.getString("diplome");
                     String categorie = resultSet.getString("categorie");
                     int montant = resultSet.getInt("montant");
 
-                    Tarif tarif = new Tarif(numero, diplome, categorie, montant);
+                    Tarif tarif = new Tarif(id, numero, diplome, categorie, montant);
                     tarifs.add(tarif);
                 }
 
