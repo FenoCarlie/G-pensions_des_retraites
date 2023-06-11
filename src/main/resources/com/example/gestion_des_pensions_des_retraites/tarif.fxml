@@ -52,7 +52,7 @@
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                  </columnResizePolicy>
                                  <columns>
-                                    <TableColumn fx:id="TcId" prefWidth="75.0" text="Id" />
+                                    <TableColumn fx:id="TcId" prefWidth="75.0" text="Id" visible="false" />
                                     <TableColumn fx:id="TcNumero" prefWidth="221.0" text="Numero" />
                                     <TableColumn fx:id="TcDiplome" prefWidth="271.0" text="Diplome" />
                                     <TableColumn fx:id="TcCategorie" prefWidth="279.0" text="Categorie" />

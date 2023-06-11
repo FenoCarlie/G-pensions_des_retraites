@@ -61,23 +61,41 @@ public class TarifController {
         });
     }
 
+    private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
+
     private void showContextMenu(MouseEvent event) {
         Tarif selectedTarif = tbvTarifs.getSelectionModel().getSelectedItem();
 
         if (selectedTarif != null) {
-            ContextMenu contextMenu = new ContextMenu();
+            if (contextMenu != null) {
+                // Si le menu contextuel existe déjà, le fermer avant d'en créer un nouveau
+                contextMenu.hide();
+                contextMenu = null;
+            }
+
+            contextMenu = new ContextMenu();
 
             // Option Modifier
             MenuItem modifierMenuItem = new MenuItem("Modifier");
             modifierMenuItem.setOnAction(e -> modifierTarif(selectedTarif));
             contextMenu.getItems().add(modifierMenuItem);
 
-            // Option Suprimer
+            // Option Supprimer
             MenuItem supprimerMenuItem = new MenuItem("Supprimer");
             supprimerMenuItem.setOnAction(e -> supprimerTarif(selectedTarif));
             contextMenu.getItems().add(supprimerMenuItem);
 
             contextMenu.show(tbvTarifs, event.getScreenX(), event.getScreenY());
+
+            // Gérer l'événement de clic droit pour masquer le menu contextuel
+            tbvTarifs.setOnMousePressed(mouseEvent -> {
+                if (mouseEvent.isSecondaryButtonDown()) {
+                    if (contextMenu != null) {
+                        contextMenu.hide();
+                        contextMenu = null;
+                    }
+                }
+            });
         }
     }
 
@@ -365,21 +383,19 @@ public class TarifController {
     }
 
     private void loadDataFromDatabase() {
+        // Effacer les données existantes
+        tarifs.clear();
+
         try {
             Connection conn = ConnectionDatabase.connect();
 
             if (conn != null) {
-                System.out.println("La connexion à la base de données a été établie avec succès.");
-
                 // Récupérer les tarifs depuis la base de données
                 String query = "SELECT * FROM tarif";
                 PreparedStatement statement = conn.prepareStatement(query);
                 ResultSet resultSet = statement.executeQuery();
 
-                // Effacer les données existantes
-                tarifs.clear();
-
-                // Parcourir les résultats et ajouter les tarifs à la liste
+                // Ajouter les tarifs à la liste observable
                 while (resultSet.next()) {
                     int id = resultSet.getInt("id");
                     String numero = resultSet.getString("num_tarif");
@@ -391,6 +407,7 @@ public class TarifController {
                     tarifs.add(tarif);
                 }
 
+                // Fermer les ressources
                 resultSet.close();
                 statement.close();
                 conn.close();
