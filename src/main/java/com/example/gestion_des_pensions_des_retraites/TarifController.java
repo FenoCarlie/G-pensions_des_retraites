@@ -36,6 +36,7 @@ public class TarifController {
     @FXML
     private TableColumn<Tarif, Integer> TcMontant;
 
+
     private ObservableList<Tarif> tarifs;
 
     @FXML
