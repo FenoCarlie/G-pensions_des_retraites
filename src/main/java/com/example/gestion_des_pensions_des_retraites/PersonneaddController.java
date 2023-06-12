@@ -4,28 +4,44 @@ import javafx.scene.control.TextField;
 
 public class PersonneaddController {
     @FXML
-    private TextField tfNumero;
+    private TextField tfIm;
 
+    @FXML
+    private TextField tfNom;
+
+    @FXML
+    private TextField tfPrenom;
+
+    @FXML
+    private TextField tfDateNais;
+
+    @FXML
+    private TextField tfContact;
+    @FXML
+    private TextField tfStatut;
     @FXML
     private TextField tfDiplome;
-
     @FXML
-    private TextField tfCategorie;
-
+    private TextField tfSituation;
     @FXML
-    private TextField tfMontant;
+    private TextField tfNomConj;
+    @FXML
+    private TextField tfPrenomConj;
 
-    public Tarifadd getTarif() {
-        String numero = tfNumero.getText();
+    public Personneadd getPersonne() {
+        String im = tfIm.getText();
+        String nom = tfNom.getText();
+        String prenom = tfPrenom.getText();
+        String dateNais = tfDateNais.getText();
+        String contact = tfContact.getText();
+        String statut = tfStatut.getText();
         String diplome = tfDiplome.getText();
-        String categorie = tfCategorie.getText();
-        int montant = 0; // Valeur par défaut en cas de champ de saisie vide
+        String situation = tfSituation.getText();
+        String nomConj = tfNomConj.getText();
+        String prenomConj = tfPrenomConj.getText();
 
-        if (!tfMontant.getText().isEmpty()) {
-            montant = Integer.parseInt(tfMontant.getText());
-        }
 
         // Créer et retourner un objet Tarif avec les valeurs saisies dans les champs de saisie
-        return new Tarifadd(numero, diplome, categorie, montant);
+        return new Personneadd(im, nom, prenom, dateNais, contact, statut, diplome, situation, nomConj, prenomConj);
     }
 }

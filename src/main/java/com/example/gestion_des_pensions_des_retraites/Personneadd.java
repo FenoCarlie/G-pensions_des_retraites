@@ -1,7 +1,5 @@
 package com.example.gestion_des_pensions_des_retraites;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -11,16 +9,18 @@ public class Personneadd {
     private final StringProperty prenom;
     private final StringProperty date_nais;
     private final StringProperty contact;
+    private final StringProperty statut;
     private final StringProperty diplome;
     private final StringProperty situation;
     private final StringProperty nom_conjoint;
     private final StringProperty prenom_conjoint;
 
-    public Personneadd(String im, String nom, String prenom, String date_nais, String situation, String contact, String diplome, String nom_conjoint, String prenom_conjoint) {
+    public Personneadd(String im, String nom, String prenom, String situation, String date_nais, String statut, String contact, String diplome, String nom_conjoint, String prenom_conjoint) {
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
         this.prenom = new SimpleStringProperty(prenom);
         this.date_nais = new SimpleStringProperty(date_nais);
+        this.statut = new SimpleStringProperty(statut);
         this.situation = new SimpleStringProperty(situation);
         this.contact = new SimpleStringProperty(contact);
         this.diplome = new SimpleStringProperty(diplome);
@@ -40,6 +40,19 @@ public class Personneadd {
 
     public StringProperty imProperty() {
         return im;
+    }
+
+    // Getters and setters for statut
+    public String getStatut() {
+        return statut.get();
+    }
+
+    public void setStatut(String statut) {
+        this.statut.set(statut);
+    }
+
+    public StringProperty statutProperty() {
+        return statut;
     }
 
     // Getters and setters for diplome

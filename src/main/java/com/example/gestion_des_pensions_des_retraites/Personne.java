@@ -12,15 +12,17 @@ public class Personne {
     private final StringProperty prenom;
     private final StringProperty date_nais;
     private final StringProperty contact;
+    private final StringProperty statut;
     private final StringProperty diplome;
     private final StringProperty situation;
     private final StringProperty nom_conjoint;
     private final StringProperty prenom_conjoint;
 
-    public Personne(int id, String im, String nom, String prenom, String date_nais, String situation, String contact, String diplome, String nom_conjoint, String prenom_conjoint) {
+    public Personne(int id, String im, String nom, String prenom, String date_nais, String situation, String statut, String contact, String diplome, String nom_conjoint ,String prenom_conjoint) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
+        this.statut = new SimpleStringProperty(statut);
         this.prenom = new SimpleStringProperty(prenom);
         this.date_nais = new SimpleStringProperty(date_nais);
         this.situation = new SimpleStringProperty(situation);
@@ -41,6 +43,19 @@ public class Personne {
 
     public IntegerProperty idProperty() {
         return id;
+    }
+
+    // Getters and setters for im
+    public String getStatut() {
+        return statut.get();
+    }
+
+    public void setStatut(String statut) {
+        this.statut.set(statut);
+    }
+
+    public StringProperty statutProperty() {
+        return statut;
     }
 
     // Getters and setters for im

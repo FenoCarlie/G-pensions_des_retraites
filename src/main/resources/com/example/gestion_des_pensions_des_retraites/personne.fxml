@@ -14,7 +14,7 @@
 
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gestion_des_pensions_des_retraites.PersonneController">
    <top>
-      <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="693.0" style="-fx-background-color: #1a3657;" BorderPane.alignment="CENTER">
+      <HBox fx:id="ajouterPersonne" alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="693.0" style="-fx-background-color: #1a3657;" BorderPane.alignment="CENTER">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
@@ -32,7 +32,7 @@
             </Label>
             <HBox alignment="CENTER" prefHeight="67.0" prefWidth="184.0">
                <children>
-                  <Button mnemonicParsing="false" prefHeight="42.0" prefWidth="128.0" text="Ajout" />
+                  <Button mnemonicParsing="false" onAction="#ajouterPersonne" prefHeight="42.0" prefWidth="128.0" text="Ajout" />
                </children>
             </HBox>
          </children>
@@ -45,7 +45,7 @@
                <content>
                   <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
                      <center>
-                        <TableView fx:id="tbvPersonne" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1293.0" stylesheets="@styling.css" BorderPane.alignment="CENTER">
+                        <TableView fx:id="tbvPersonnes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1293.0" stylesheets="@styling.css" BorderPane.alignment="CENTER">
                            <columnResizePolicy>
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
