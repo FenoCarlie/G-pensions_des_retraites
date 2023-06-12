@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.gestion_des_pensions_des_retraites.PersonneController">
    <top>
       <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="693.0" style="-fx-background-color: #1a3657;" BorderPane.alignment="CENTER">
          <opaqueInsets>
@@ -56,9 +56,11 @@
                               <TableColumn fx:id="PcPrenom" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prénoms" />
                               <TableColumn fx:id="PcDate_nais" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Date de naissense" />
                               <TableColumn fx:id="PcContact" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Contact" />
+                              <TableColumn fx:id="PcStatut" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Statut" />
                               <TableColumn fx:id="PcDiplome" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Diplaome" />
                               <TableColumn fx:id="PcSituation" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Situation" />
-                              <TableColumn fx:id="PcNom_PN_Conj" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom et Prenom conjoint" />
+                              <TableColumn fx:id="PcNom_Conj" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom conjoint" />
+                              <TableColumn fx:id="PcPrenom_Conj" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prenom conjoint" />
                            </columns>
                         </TableView>
                      </center>

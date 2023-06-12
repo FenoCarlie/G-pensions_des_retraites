@@ -5,8 +5,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Personne {
-    private final IntegerProperty id;
+public class Personneadd {
     private final StringProperty im;
     private final StringProperty nom;
     private final StringProperty prenom;
@@ -17,8 +16,7 @@ public class Personne {
     private final StringProperty nom_conjoint;
     private final StringProperty prenom_conjoint;
 
-    public Personne(int id, String im, String nom, String prenom, String date_nais, String situation, String contact, String diplome, String nom_conjoint, String prenom_conjoint) {
-        this.id = new SimpleIntegerProperty(id);
+    public Personneadd(String im, String nom, String prenom, String date_nais, String situation, String contact, String diplome, String nom_conjoint, String prenom_conjoint) {
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
         this.prenom = new SimpleStringProperty(prenom);
@@ -30,18 +28,6 @@ public class Personne {
         this.prenom_conjoint = new SimpleStringProperty(prenom_conjoint);
     }
 
-    // Getters and setters for id
-    public int getId() {
-        return id.get();
-    }
-
-    public void setId(int id) {
-        this.id.set(id);
-    }
-
-    public IntegerProperty idProperty() {
-        return id;
-    }
 
     // Getters and setters for im
     public String getIm() {
