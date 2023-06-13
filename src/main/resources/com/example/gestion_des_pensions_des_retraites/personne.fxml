@@ -53,14 +53,14 @@
                               <TableColumn fx:id="PcId" prefWidth="75.0" text="Id" />
                               <TableColumn fx:id="PcIm" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="IM" />
                               <TableColumn fx:id="PcNom" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom" />
-                              <TableColumn fx:id="PcPrenom" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prénoms" />
-                              <TableColumn fx:id="PcDate_nais" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Date de naissense" />
+                              <TableColumn fx:id="PcPrenoms" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prénoms" />
+                              <TableColumn fx:id="PcDatenais" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Date de naissense" />
                               <TableColumn fx:id="PcContact" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Contact" />
                               <TableColumn fx:id="PcStatut" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Statut" />
                               <TableColumn fx:id="PcDiplome" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Diplaome" />
                               <TableColumn fx:id="PcSituation" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Situation" />
-                              <TableColumn fx:id="PcNom_Conj" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom conjoint" />
-                              <TableColumn fx:id="PcPrenom_Conj" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prenom conjoint" />
+                              <TableColumn fx:id="PcNomconjoint" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom conjoint" />
+                              <TableColumn fx:id="PcPrenomconjoint" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prenom conjoint" />
                            </columns>
                         </TableView>
                      </center>

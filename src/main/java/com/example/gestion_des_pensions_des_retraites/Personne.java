@@ -1,35 +1,35 @@
 package com.example.gestion_des_pensions_des_retraites;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
+
+import java.time.LocalDate;
+import java.util.Date;
 
 public class Personne {
     private final IntegerProperty id;
     private final StringProperty im;
     private final StringProperty nom;
-    private final StringProperty prenom;
-    private final StringProperty date_nais;
+    private final StringProperty prenoms;
+    Date datenais;
     private final StringProperty contact;
-    private final StringProperty statut;
+    private final BooleanProperty statut;
     private final StringProperty diplome;
     private final StringProperty situation;
-    private final StringProperty nom_conjoint;
-    private final StringProperty prenom_conjoint;
+    private final StringProperty nomconjoint;
+    private final StringProperty prenomconjoint;
 
-    public Personne(int id, String im, String nom, String prenom, String date_nais, String situation, String statut, String contact, String diplome, String nom_conjoint ,String prenom_conjoint) {
+    public Personne(int id, String im, String nom, String prenoms, Date datenais, String situation, boolean statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
-        this.statut = new SimpleStringProperty(statut);
-        this.prenom = new SimpleStringProperty(prenom);
-        this.date_nais = new SimpleStringProperty(date_nais);
-        this.situation = new SimpleStringProperty(situation);
+        this.prenoms = new SimpleStringProperty(prenoms);
+        this.datenais = datenais;
         this.contact = new SimpleStringProperty(contact);
+        this.statut = new SimpleBooleanProperty(statut);
         this.diplome = new SimpleStringProperty(diplome);
-        this.nom_conjoint = new SimpleStringProperty(nom_conjoint);
-        this.prenom_conjoint = new SimpleStringProperty(prenom_conjoint);
+        this.situation = new SimpleStringProperty(situation);
+        this.nomconjoint = new SimpleStringProperty(nomconjoint);
+        this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
     }
 
     // Getters and setters for id
@@ -45,16 +45,16 @@ public class Personne {
         return id;
     }
 
-    // Getters and setters for im
-    public String getStatut() {
+    // Getters and setters for statut
+    public boolean isStatut() {
         return statut.get();
     }
 
-    public void setStatut(String statut) {
+    public void setStatut(boolean statut) {
         this.statut.set(statut);
     }
 
-    public StringProperty statutProperty() {
+    public BooleanProperty statutProperty() {
         return statut;
     }
 
@@ -110,17 +110,17 @@ public class Personne {
         return nom;
     }
 
-    // Getters and setters for prenom
-    public String getPrenom() {
-        return prenom.get();
+    // Getters and setters for prenoms
+    public String getPrenoms() {
+        return prenoms.get();
     }
 
-    public void setPrenom(String prenom) {
-        this.prenom.set(prenom);
+    public void setPrenoms(String prenoms) {
+        this.prenoms.set(prenoms);
     }
 
-    public StringProperty prenomProperty() {
-        return prenom;
+    public StringProperty prenomsProperty() {
+        return prenoms;
     }
 
     // Getters and setters for situation
@@ -136,42 +136,38 @@ public class Personne {
         return situation;
     }
 
-    // Getters and setters for date_nais
-    public String getDate_nais() {
-        return date_nais.get();
+    // Getters and setters for datenais
+    public Date getDatenais() {
+        return datenais;
     }
 
-    public void setDate_nais(String date_nais) {
-        this.date_nais.set(date_nais);
+    public void setDatenais(Date datenais) {
+        this.datenais = datenais;
     }
 
-    public StringProperty date_naisProperty() {
-        return date_nais;
+    // Getters and setters for nomconjoint
+    public String getNomconjoint() {
+        return nomconjoint.get();
     }
 
-    // Getters and setters for nom_conjoint
-    public String getNom_conjoint() {
-        return nom_conjoint.get();
+    public void setNomconjoint(String nomconjoint) {
+        this.nomconjoint.set(nomconjoint);
     }
 
-    public void setNom_conjoint(String nom_conjoint) {
-        this.nom_conjoint.set(nom_conjoint);
+    public StringProperty nomconjointProperty() {
+        return nomconjoint;
     }
 
-    public StringProperty nom_conjointProperty() {
-        return nom_conjoint;
+    // Getters and setters for prenomconjoint
+    public String getPrenomconjoint() {
+        return prenomconjoint.get();
     }
 
-    // Getters and setters for prenom_conjoint
-    public String getPrenom_conjoint() {
-        return prenom_conjoint.get();
+    public void setPrenomconjoint(String prenomconjoint) {
+        this.prenomconjoint.set(prenomconjoint);
     }
 
-    public void setPrenom_conjoint(String prenom_conjoint) {
-        this.prenom_conjoint.set(prenom_conjoint);
-    }
-
-    public StringProperty prenom_conjointProperty() {
-        return prenom_conjoint;
+    public StringProperty prenomconjointProperty() {
+        return prenomconjoint;
     }
 }
