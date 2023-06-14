@@ -8,13 +8,13 @@ public class Payer {
     private final IntegerProperty id;
     private final StringProperty im;
     private final StringProperty num_tarif;
-    private final ObjectProperty<LocalDate> date;
+    private final StringProperty date;
 
-    public Payer(int id, String im, String num_tarif, LocalDate date) {
+    public Payer(int id, String im, String num_tarif, String date) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
         this.num_tarif = new SimpleStringProperty(num_tarif);
-        this.date = new SimpleObjectProperty<>(date);
+        this.date = new SimpleStringProperty(date);
     }
 
     // Getters and setters for id
@@ -51,12 +51,12 @@ public class Payer {
     }
 
     // Getter for date property
-    public LocalDate getDate() {
+    public String getDate() {
         return date.get();
     }
 
     // Setter for date property
-    public void setDate(LocalDate date) {
+    public void setDate(String date) {
         this.date.set(date);
     }
 
@@ -70,7 +70,7 @@ public class Payer {
     }
 
     // Getter method for the ObjectProperty
-    public ObjectProperty<LocalDate> dateProperty() {
+    public StringProperty dateProperty() {
         return date;
     }
 }

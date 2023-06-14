@@ -12,6 +12,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,7 +41,7 @@ public class PayerController {
     private TableColumn<Payer, String> PcNum_tarif;
 
     @FXML
-    private TableColumn<Payer, Date> PcDate;
+    private TableColumn<Payer, String> PcDate;
 
 
     @FXML
@@ -51,13 +56,7 @@ public class PayerController {
         PcId.setCellValueFactory(data -> data.getValue().idProperty().asObject());
         PcIm.setCellValueFactory(data -> data.getValue().imProperty());
         PcNum_tarif.setCellValueFactory(data -> data.getValue().num_tarifProperty());
-        PcDate.setCellValueFactory(data -> {
-            ObjectProperty<LocalDate> dateProperty = data.getValue().dateProperty();
-            LocalDate localDate = dateProperty.get();
-            Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-            Date date = Date.from(instant);
-            return new SimpleObjectProperty<>(date);
-        });
+        PcDate.setCellValueFactory(data -> data.getValue().dateProperty());
         tbvPayers.setItems(payers);
 
         // Récupérer les données des tarifs depuis la base de données
@@ -157,7 +156,7 @@ public class PayerController {
             // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations du tarif ici
             String im = tfIm.getText();
             String num_tarif = tfNum_tarif.getText();
-            LocalDate date = dpDate.getValue();
+            String date = String.valueOf(dpDate.getValue());
 
             // Mettre à jour les propriétés du tarif
             payer.setIm(im);
@@ -453,10 +452,11 @@ public class PayerController {
                         String num_tarif = resultSet.getString("num_tarif");
                         java.sql.Date date = resultSet.getDate("date");
 
-                        // Convert java.sql.Date to java.time.LocalDate
-                        LocalDate localDate = date.toLocalDate();
+                        // Format the date using SimpleDateFormat
+                        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+                        String formattedDate = dateFormatter.format(date);
 
-                        Payer payer = new Payer(id, im, num_tarif, localDate);
+                        Payer payer = new Payer(id, im, num_tarif, formattedDate);
                         payers.add(payer);
                     }
                 } catch (SQLException e) {
