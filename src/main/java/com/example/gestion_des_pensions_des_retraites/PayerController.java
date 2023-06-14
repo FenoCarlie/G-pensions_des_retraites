@@ -234,9 +234,9 @@ public class PayerController {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
                 // Supprimer le tarif
-                String deleteQuery = "DELETE FROM payer WHERE im = ?";
+                String deleteQuery = "DELETE FROM payer WHERE id = ?";
                 PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
-                deleteStatement.setString(1, payer.getIm());
+                deleteStatement.setInt(1, payer.getId());
                 deleteStatement.executeUpdate();
                 deleteStatement.close();
 
@@ -311,17 +311,64 @@ public class PayerController {
     }
 
     private boolean validateInputs(String im, String num_tarif, LocalDate date) {
-        // Perform validation logic using the provided input parameters (im, num_tarif, date)
+        boolean hasError = false;
 
-        // Example validation logic:
         if (im.isEmpty() || num_tarif.isEmpty() || date == null) {
-            // Display an error message or perform some action if the inputs are invalid
-            return false;
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de validation");
+            alert.setHeaderText("Veuillez remplir tous les champs");
+            alert.showAndWait();
+            hasError = true;
+        } else {
+            try {
+                Connection conn = ConnectionDatabase.connect();
+                if (conn != null) {
+                    // Vérifier si la valeur de "im" existe dans la table "personne"
+                    String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
+                    PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
+                    selectPersonneStatement.setString(1, im);
+                    ResultSet personneResultSet = selectPersonneStatement.executeQuery();
+                    personneResultSet.next();
+                    int personneRowCount = personneResultSet.getInt(1);
+                    personneResultSet.close();
+                    selectPersonneStatement.close();
+
+                    // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
+                    String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
+                    PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery);
+                    selectNumTarifStatement.setString(1, num_tarif);
+                    ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery();
+                    numTarifResultSet.next();
+                    int numTarifRowCount = numTarifResultSet.getInt(1);
+                    numTarifResultSet.close();
+                    selectNumTarifStatement.close();
+
+                    if (personneRowCount == 0) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Erreur de validation");
+                        alert.setHeaderText("La valeur de 'im' n'existe pas dans la table 'personne'.");
+                        alert.showAndWait();
+                        hasError = true;
+                    }
+
+                    if (numTarifRowCount == 0) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Erreur de validation");
+                        alert.setHeaderText("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
+                        alert.showAndWait();
+                        hasError = true;
+                    }
+
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        // If all validation checks pass, return true
-        return true;
+        return hasError;
     }
+
 
     private void showErrorMessage(String message) {
         Alert alert = new Alert(AlertType.ERROR);
@@ -338,17 +385,45 @@ public class PayerController {
             if (conn != null) {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
-                // Insérer le nouveau tarif
-                String insertQuery = "INSERT INTO TARIF (im, num_tarif, date) VALUES (?, ?, ?)";
-                PreparedStatement insertStatement = conn.prepareStatement(insertQuery);
-                insertStatement.setString(1, payer.getIm());
-                insertStatement.setString(2, payer.getNumTarif());
-                insertStatement.setDate(3, java.sql.Date.valueOf(payer.getDate()));
-                insertStatement.executeUpdate();
-                insertStatement.close();
+                // Vérifier si la valeur de "im" existe dans la table "personne"
+                String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
+                PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
+                selectPersonneStatement.setString(1, payer.getIm());
+                ResultSet personneResultSet = selectPersonneStatement.executeQuery();
+                personneResultSet.next();
+                int personneRowCount = personneResultSet.getInt(1);
+                personneResultSet.close();
+                selectPersonneStatement.close();
 
+                // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
+                String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
+                PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery);
+                selectNumTarifStatement.setString(1, payer.getNumTarif());
+                ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery();
+                numTarifResultSet.next();
+                int numTarifRowCount = numTarifResultSet.getInt(1);
+                numTarifResultSet.close();
+                selectNumTarifStatement.close();
 
-                System.out.println("Le tarif a été ajouté avec succès.");
+                if (personneRowCount > 0 && numTarifRowCount > 0) {
+                    // Insérer le nouveau tarif
+                    String insertQuery = "INSERT INTO payer (im, num_tarif, date) VALUES (?, ?, ?)";
+                    PreparedStatement insertStatement = conn.prepareStatement(insertQuery);
+                    insertStatement.setString(1, payer.getIm());
+                    insertStatement.setString(2, payer.getNumTarif());
+                    insertStatement.setDate(3, java.sql.Date.valueOf(payer.getDate()));
+                    insertStatement.executeUpdate();
+                    insertStatement.close();
+
+                    System.out.println("Le tarif a été ajouté avec succès.");
+                } else {
+                    if (personneRowCount == 0) {
+                        showErrorMessage("La valeur de 'im' n'existe pas dans la table 'personne'.");
+                    }
+                    if (numTarifRowCount == 0) {
+                        showErrorMessage("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
+                    }
+                }
 
                 conn.close();
             } else {
@@ -359,37 +434,34 @@ public class PayerController {
         }
     }
 
+
     private void loadDataFromDatabase() {
         // Clear existing data
         payers.clear();
 
-        try {
-            Connection conn = ConnectionDatabase.connect();
-
+        try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 // Retrieve payers from the database
                 String query = "SELECT * FROM payer";
-                PreparedStatement statement = conn.prepareStatement(query);
-                ResultSet resultSet = statement.executeQuery();
+                try (PreparedStatement statement = conn.prepareStatement(query);
+                     ResultSet resultSet = statement.executeQuery()) {
 
-                // Add payers to the observable list
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String im = resultSet.getString("im");
-                    String num_tarif = resultSet.getString("num_tarif");
-                    java.sql.Date date = resultSet.getDate("date");
+                    // Add payers to the observable list
+                    while (resultSet.next()) {
+                        int id = resultSet.getInt("id");
+                        String im = resultSet.getString("im");
+                        String num_tarif = resultSet.getString("num_tarif");
+                        java.sql.Date date = resultSet.getDate("date");
 
-                    // Convert java.sql.Date to java.time.LocalDate
-                    LocalDate localDate = date.toLocalDate();
+                        // Convert java.sql.Date to java.time.LocalDate
+                        LocalDate localDate = date.toLocalDate();
 
-                    Payer payer = new Payer(id, im, num_tarif, localDate);
-                    payers.add(payer);
+                        Payer payer = new Payer(id, im, num_tarif, localDate);
+                        payers.add(payer);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-
-                // Close resources
-                resultSet.close();
-                statement.close();
-                conn.close();
             } else {
                 showErrorMessage("Échec de la connexion à la base de données.");
             }
