@@ -1,58 +1,34 @@
 package com.example.gestion_des_pensions_des_retraites;
 
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
-public class Personne {
-    private final IntegerProperty id;
+import java.sql.Date;
+import java.time.LocalDate;
+
+public class Personneadd {
     private final StringProperty im;
     private final StringProperty nom;
     private final StringProperty prenoms;
-    private final StringProperty datenais;
+    private final ObjectProperty<LocalDate> datenais;
     private final StringProperty contact;
-    private final StringProperty statut;
     private final StringProperty diplome;
     private final StringProperty situation;
     private final StringProperty nomconjoint;
     private final StringProperty prenomconjoint;
 
-    public Personne(int id, String im, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
-        this.id = new SimpleIntegerProperty(id);
+    public Personneadd(String im, String nom, String prenoms, LocalDate datenais, String situation, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
         this.prenoms = new SimpleStringProperty(prenoms);
-        this.datenais = new SimpleStringProperty(datenais);
+        this.datenais = new SimpleObjectProperty<>(datenais);
         this.contact = new SimpleStringProperty(contact);
-        this.statut = new SimpleStringProperty(statut); // Modification ici
         this.diplome = new SimpleStringProperty(diplome);
         this.situation = new SimpleStringProperty(situation);
         this.nomconjoint = new SimpleStringProperty(nomconjoint);
         this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
-    }
-
-    // Getters and setters for id
-    public int getId() {
-        return id.get();
-    }
-
-    public void setId(int id) {
-        this.id.set(id);
-    }
-
-    public IntegerProperty idProperty() {
-        return id;
-    }
-
-    // Getters and setters for statut
-    public String isStatut() {
-        return statut.get();
-    }
-
-    public void setStatut(String statut) {
-        this.statut.set(statut);
-    }
-
-    public StringProperty statutProperty() {
-        return statut;
     }
 
     // Getters and setters for im
@@ -134,15 +110,15 @@ public class Personne {
     }
 
     // Getters and setters for datenais
-    public String getDatenais() {
+    public LocalDate getDatenais() {
         return datenais.get();
     }
 
-    public StringProperty datenaisProperty() {
+    public ObjectProperty<LocalDate> datenaisProperty() {
         return datenais;
     }
 
-    public void setDatenais(String datenais) {
+    public void setDatenais(LocalDate datenais) {
         this.datenais.set(datenais);
     }
 

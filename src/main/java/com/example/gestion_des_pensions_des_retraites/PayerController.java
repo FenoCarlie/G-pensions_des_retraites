@@ -118,8 +118,8 @@ public class PayerController {
         tfIm.setPromptText("IM");
         TextField tfNum_tarif = new TextField(payer.getNum_tarif());
         tfNum_tarif.setPromptText("Numero tarif");
-        TextField tfDate = new TextField(payer.getDate().toString());
-        tfDate.setPromptText("Date");
+        DatePicker dpDate = new DatePicker();
+        dpDate.setPromptText("Date");
 
         // Créer une disposition pour organiser les éléments
         GridPane gridPane = new GridPane();
@@ -156,12 +156,12 @@ public class PayerController {
             // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations du tarif ici
             String im = tfIm.getText();
             String num_tarif = tfNum_tarif.getText();
-            String date = String.valueOf(dpDate.getValue());
+            LocalDate date = dpDate.getValue();
 
             // Mettre à jour les propriétés du tarif
             payer.setIm(im);
             payer.setNum_tarif(num_tarif);
-            payer.setDate(date);
+            payer.setDate(String.valueOf(LocalDate.parse(String.valueOf(date))));
 
             // Mettre à jour le tarif dans la base de données
             updateDatabase(payer);
@@ -170,6 +170,8 @@ public class PayerController {
             loadDataFromDatabase();
         }
     }
+
+
 
     private void updateDatabase(Payer payer) {
         Connection conn = ConnectionDatabase.connect();
