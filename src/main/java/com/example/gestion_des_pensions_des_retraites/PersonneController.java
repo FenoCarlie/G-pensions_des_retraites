@@ -90,9 +90,9 @@ public class PersonneController {
     private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
 
     private void showContextMenu(MouseEvent event) {
-        Personne selectedPayer = tbvPersonnes.getSelectionModel().getSelectedItem();
+        Personne selectedPersonne = tbvPersonnes.getSelectionModel().getSelectedItem();
 
-        if (selectedPayer != null) {
+        if (selectedPersonne != null) {
             if (contextMenu != null) {
                 // Si le menu contextuel existe déjà, le fermer avant d'en créer un nouveau
                 contextMenu.hide();
@@ -103,13 +103,18 @@ public class PersonneController {
 
             // Option Modifier
             MenuItem modifierMenuItem = new MenuItem("Modifier");
-            modifierMenuItem.setOnAction(e -> modifierPayer(selectedPayer));
+            modifierMenuItem.setOnAction(e -> modifierPersonne(selectedPersonne));
             contextMenu.getItems().add(modifierMenuItem);
 
             // Option Supprimer
             MenuItem supprimerMenuItem = new MenuItem("Supprimer");
-            supprimerMenuItem.setOnAction(e -> supprimerPayer(selectedPayer));
+            supprimerMenuItem.setOnAction(e -> supprimerPersonne(selectedPersonne));
             contextMenu.getItems().add(supprimerMenuItem);
+
+            // Option Supprimer
+            MenuItem payerMenuItem = new MenuItem("Payer");
+            payerMenuItem.setOnAction(e -> payerPersonne(selectedPersonne));
+            contextMenu.getItems().add(payerMenuItem);
 
             contextMenu.show(tbvPersonnes, event.getScreenX(), event.getScreenY());
 
@@ -127,35 +132,23 @@ public class PersonneController {
 
     @FXML
     private void ajouterPersonne() {
-        // Créer une nouvelle fenêtre de dialogue
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Ajouter une personne");
 
-        // Créer des champs de saisie pour les informations de la personne
-        TextField tfIm = new TextField();
-        tfIm.setPromptText("IM");
-        TextField tfNom = new TextField();
-        tfNom.setPromptText("Nom");
-        TextField tfPrenoms = new TextField();
-        tfPrenoms.setPromptText("Prénom");
+        // Création des champs de saisie
+        TextField tfIm = createTextFieldWithPrompt("IM");
+        TextField tfNom = createTextFieldWithPrompt("Nom");
+        TextField tfPrenoms = createTextFieldWithPrompt("Prénom");
         DatePicker dpDate = new DatePicker();
         dpDate.setPromptText("Date de naissance");
-        TextField tfContact = new TextField();
-        tfContact.setPromptText("Contact");
-        ComboBox<String> cbDiplome = new ComboBox<>();
-        cbDiplome.setPromptText("Diplôme");
-        ComboBox<String> cbSituation = new ComboBox<>();
-        cbSituation.setPromptText("Situation");
+        TextField tfContact = createTextFieldWithPrompt("Contact");
+        ComboBox<String> cbDiplome = createComboBoxWithPrompt("Diplôme");
+        ComboBox<String> cbSituation = createComboBoxWithPrompt("Situation");
         cbSituation.getItems().addAll("divorcé(e)", "marié(e)", "veuf(ve)");
-        TextField tfNomConjoint = new TextField();
-        tfNomConjoint.setPromptText("Nom conjoint");
-        TextField tfPrenomConjoint = new TextField();
-        tfPrenomConjoint.setPromptText("Prénom conjoint");
+        TextField tfNomConjoint = createTextFieldWithPrompt("Nom conjoint");
+        TextField tfPrenomConjoint = createTextFieldWithPrompt("Prénom conjoint");
 
-        // Créer une disposition pour organiser les éléments
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
+        GridPane gridPane = createGridPane();
         gridPane.addRow(0, new Label("IM:"), tfIm);
         gridPane.addRow(1, new Label("Nom:"), tfNom);
         gridPane.addRow(2, new Label("Prénom:"), tfPrenoms);
@@ -168,36 +161,29 @@ public class PersonneController {
 
         dialog.getDialogPane().setContent(gridPane);
 
-        // Charger les diplômes depuis la base de données
         ObservableList<String> diplomeList = getDiplomesFromDatabase();
         cbDiplome.setItems(diplomeList);
 
-        // Ajouter les boutons "Valider" et "Annuler" à la fenêtre de dialogue
         ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
         ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
 
-        // Obtenir le bouton de validation
         Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
-
-        // Désactiver le bouton de validation par défaut
         validerButton.setDefaultButton(false);
 
-        // Écouter les événements de clic sur le bouton de validation
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            // Vérifier les entrées utilisateur et afficher un message d'erreur si nécessaire
-            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(), cbDiplome.getValue(), tfContact.getText(), cbSituation.getValue(), tfNomConjoint.getText(), tfPrenomConjoint.getText())) {
-                event.consume(); // Empêcher la fermeture du dialogue
+            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(),
+                    cbDiplome.getValue(), tfContact.getText(), cbSituation.getValue(),
+                    tfNomConjoint.getText(), tfPrenomConjoint.getText())) {
+                event.consume();
             }
         });
 
-        // Attendre que l'utilisateur appuie sur l'un des boutons
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == validerButtonType) {
-            // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations de la personne ici
             String im = tfIm.getText();
             String nom = tfNom.getText();
-            String prenoms= tfPrenoms.getText();
+            String prenoms = tfPrenoms.getText();
             LocalDate datenais = dpDate.getValue();
             String contact = tfContact.getText();
             String diplome = cbDiplome.getValue();
@@ -208,110 +194,73 @@ public class PersonneController {
             Personneadd personne = new Personneadd(im, nom, prenoms, datenais, situation, contact, diplome, nomConjoint, prenomConjoint);
             addToDatabase(personne);
 
-            // Recharger les données depuis la base de données
             loadDataFromDatabase();
         }
     }
 
+    private TextField createTextFieldWithPrompt(String promptText) {
+        TextField textField = new TextField();
+        textField.setPromptText(promptText);
+        return textField;
+    }
+
+    private ComboBox<String> createComboBoxWithPrompt(String promptText) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.setPromptText(promptText);
+        return comboBox;
+    }
+
+    private GridPane createGridPane() {
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        return gridPane;
+    }
 
     private ObservableList<String> getDiplomesFromDatabase() {
         ObservableList<String> diplomeList = FXCollections.observableArrayList();
-
-        // Établir une connexion à la base de données
-        try (Connection conn = ConnectionDatabase.connect()) {
-            // Créer une instruction SQL pour récupérer les diplômes
-            String sql = "SELECT diplome FROM tarif";
-
-            // Exécuter la requête
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery(sql)) {
-                // Parcourir les résultats de la requête
-                while (rs.next()) {
-                    String diplome = rs.getString("diplome");
-                    diplomeList.add(diplome);
-                }
+        try (Connection conn = ConnectionDatabase.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT diplome FROM tarif")) {
+            while (rs.next()) {
+                String diplome = rs.getString("diplome");
+                diplomeList.add(diplome);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            // Gérer les erreurs de connexion à la base de données
         }
-
         return diplomeList;
     }
 
-
-    private boolean validateInputs(String im, String nom, String prenom, LocalDate date, String contact, String diplome, String situation, String nomConjoint, String prenomConjoint) {
+    private boolean validateInputs(String im, String nom, String prenom, LocalDate date, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
         boolean hasError = false;
-
-        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || date == null || contact.isEmpty() || situation.isEmpty() || nomConjoint.isEmpty() || prenomConjoint.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur de validation");
-            alert.setHeaderText("Veuillez remplir tous les champs");
-            alert.showAndWait();
+        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || date == null || contact.isEmpty() ||
+                situation.isEmpty() || nomconjoint.isEmpty() || prenomconjoint.isEmpty()) {
+            showErrorMessage("Veuillez remplir tous les champs.");
             hasError = true;
         } else {
-            try {
-                Connection conn = ConnectionDatabase.connect();
+            if (!nom.matches("[A-Za-z\\p{L}]+")) {
+                showErrorMessage("Le nom ne doit contenir que des lettres.");
+                hasError = true;
+            } else {
+                nom = nom.toUpperCase();
+            }
 
-                if (conn != null) {
-                    System.out.println("La connexion à la base de données a été établie avec succès.");
-
-                    // Vérifier si la valeur de "im" existe dans la table "personne"
-                    String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
-                    PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
-                    selectPersonneStatement.setString(1, im);
-                    ResultSet personneResultSet = selectPersonneStatement.executeQuery();
-                    personneResultSet.next();
-                    int personneRowCount = personneResultSet.getInt(1);
-                    personneResultSet.close();
-                    selectPersonneStatement.close();
-
-                    if (personneRowCount > 0) {
-                        // L'IM existe déjà, afficher un message d'erreur
-                        showErrorMessage("L'IM existe déjà.");
-                        hasError = true; // Définir hasError sur true car une erreur a été détectée
-                    } else {
-                        // Insérer la nouvelle personne
-                        String insertQuery = "INSERT INTO personne (statut, im, nom, prenoms, datenais, situation, contact, diplome, nom_conjoint, prenom_conjoint) VALUES (true, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        PreparedStatement insertStatement = conn.prepareStatement(insertQuery);
-                        insertStatement.setString(1, im);
-                        insertStatement.setString(2, nom);
-                        insertStatement.setString(3, prenom);
-                        insertStatement.setDate(4, java.sql.Date.valueOf(date));
-                        insertStatement.setString(5, situation);
-                        insertStatement.setString(6, contact);
-                        insertStatement.setString(7, diplome);
-                        insertStatement.setString(8, nomConjoint);
-                        insertStatement.setString(9, prenomConjoint);
-                        insertStatement.executeUpdate();
-                        insertStatement.close();
-
-                        System.out.println("La personne a été ajoutée avec succès.");
-                    }
-
-                    conn.close();
-                } else {
-                    showErrorMessage("Échec de la connexion à la base de données.");
-                    hasError = true; // Définir hasError sur true car une erreur a été détectée
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                hasError = true; // Définir hasError sur true car une exception s'est produite
+            if (!nomconjoint.matches("[A-Za-z\\p{L}]+")) {
+                showErrorMessage("Le nom ne doit contenir que des lettres.");
+                hasError = true;
+            } else {
+                nomconjoint = nomconjoint.toUpperCase();
             }
         }
 
         return hasError;
     }
 
-
     private void addToDatabase(Personneadd personne) {
-        try {
-            Connection conn = ConnectionDatabase.connect();
-
+        try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
-
-                // Vérifier si la valeur de "im" existe dans la table "personne"
                 String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
                 PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
                 selectPersonneStatement.setString(1, personne.getIm());
@@ -322,10 +271,8 @@ public class PersonneController {
                 selectPersonneStatement.close();
 
                 if (personneRowCount > 0) {
-                    // L'IM existe déjà, afficher un message d'erreur
                     showErrorMessage("L'IM existe déjà.");
                 } else {
-                    // Insérer la nouvelle personne
                     String insertQuery = "INSERT INTO personne (statut, im, nom, prenoms, datenais, situation, contact, diplome, nomconjoint, prenomconjoint) VALUES (true, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     PreparedStatement insertStatement = conn.prepareStatement(insertQuery);
                     insertStatement.setString(1, personne.getIm());
@@ -355,11 +302,151 @@ public class PersonneController {
 
 
 
-    private void modifierPayer(Personne personne) {
 
+    private void modifierPersonne(Personne personne) {
+        // Créer une nouvelle fenêtre de dialogue
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Modifier une personne");
+
+        // Création des champs de saisie
+        TextField tfIm = new TextField(personne.getIm());
+        tfIm.setPromptText("IM");
+        TextField tfNom = new TextField(personne.getNom());
+        tfNom.setPromptText("Nom");
+        TextField tfPrenoms = new TextField(personne.getPrenoms());
+        tfPrenoms.setPromptText("Prénom");
+        DatePicker dpDate = new DatePicker();
+        dpDate.setPromptText("Date de naissance");
+        TextField tfContact = new TextField(personne.getContact());
+        tfContact.setPromptText("Contact");
+        TextField tfDiplom = new TextField(personne.getDiplome());
+        tfDiplom.setPromptText("Diplome");
+        ComboBox<String> cbSituation = createComboBoxWithPrompt("Situation");
+        cbSituation.getItems().addAll("divorcé(e)", "marié(e)", "veuf(ve)");
+        TextField tfNomconjoint = new TextField(personne.getNomconjoint());
+        tfNomconjoint.setPromptText("Nom conjoint");
+        TextField tfPrenomconjoint = new TextField(personne.getPrenomconjoint());
+        tfPrenomconjoint.setPromptText("Prénom conjoint");
+
+        // Création de la grille de disposition pour les champs de saisie
+        GridPane gridPane = new GridPane();
+        gridPane.add(new Label("IM:"), 0, 0);
+        gridPane.add(tfIm, 1, 0);
+        gridPane.add(new Label("Nom:"), 0, 1);
+        gridPane.add(tfNom, 1, 1);
+        gridPane.add(new Label("Prénom:"), 0, 2);
+        gridPane.add(tfPrenoms, 1, 2);
+        gridPane.add(new Label("Date de naissance:"), 0, 3);
+        gridPane.add(dpDate, 1, 3);
+        gridPane.add(new Label("Contact:"), 0, 4);
+        gridPane.add(tfContact, 1, 4);
+        gridPane.add(new Label("Diplome:"), 0, 5);
+        gridPane.add(tfDiplom, 1, 5);
+        gridPane.add(new Label("Situation:"), 0, 6);
+        gridPane.add(cbSituation, 1, 6);
+        gridPane.add(new Label("Nom conjoint:"), 0, 7);
+        gridPane.add(tfNomconjoint, 1, 7);
+        gridPane.add(new Label("Prénom conjoint:"), 0, 8);
+        gridPane.add(tfPrenomconjoint, 1, 8);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
+        ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
+
+        // Obtenir le bouton de validation
+        Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
+
+        // Désactiver le bouton de validation par défaut
+        validerButton.setDefaultButton(false);
+
+        // Écouter les événements de clic sur le bouton de validation
+        validerButton.addEventFilter(ActionEvent.ACTION, event -> {
+            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(),
+                    tfContact.getText(), tfDiplom.getText(), cbSituation.getValue(),
+                    tfNomconjoint.getText(), tfPrenomconjoint.getText())) {
+                event.consume();
+            }
+        });
+
+        // Attendre que l'utilisateur appuie sur l'un des boutons
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == validerButtonType) {
+            // Effectuer la mise à jour dans la base de données
+            String im = tfIm.getText();
+            String nom = tfNom.getText();
+            String prenoms = tfPrenoms.getText();
+            LocalDate datenais = dpDate.getValue();
+            String contact = tfContact.getText();
+            String diplome = tfDiplom.getText();
+            String situation = cbSituation.getValue();
+            String nomconjoint = tfNomconjoint.getText();
+            String prenomconjoint = tfPrenomconjoint.getText();
+
+            // Mettre à jour les propriétés de la personne
+            personne.setIm(im);
+            personne.setNom(nom);
+            personne.setPrenoms(prenoms);
+            personne.setDatenais(String.valueOf(datenais));
+            personne.setContact(contact);
+            personne.setDiplome(diplome);
+            personne.setSituation(situation);
+            personne.setNomconjoint(nomconjoint);
+            personne.setPrenomconjoint(prenomconjoint);
+
+            // Effectuer la mise à jour dans la base de données
+            updateDatabase(personne);
+
+            // Rafraîchir les données de la TableView
+            loadDataFromDatabase();
+        }
     }
 
-    private void supprimerPayer (Personne personne) {
+
+    private void updateDatabase(Personne personne) {
+        Connection conn = ConnectionDatabase.connect();
+
+        try {
+            // Préparez une instruction SQL pour mettre à jour la personne
+            String updateQuery = "UPDATE personne SET im = ?, nom = ?, prenoms = ?, datenais = ?, contact = ?, diplome = ?, situation = ?, nom_conjoint = ?, prenom_conjoint = ? WHERE id = ?";
+
+            // Créez une déclaration préparée en utilisant l'instruction SQL
+            PreparedStatement statement = conn.prepareStatement(updateQuery);
+
+            // Définissez les valeurs des paramètres dans la déclaration préparée
+            statement.setString(1, personne.getIm());
+            statement.setString(2, personne.getNom());
+            statement.setString(3, personne.getPrenoms());
+            statement.setDate(4, java.sql.Date.valueOf(personne.getDatenais()));
+            statement.setString(5, personne.getContact());
+            statement.setString(6, personne.getDiplome());
+            statement.setString(7, personne.getSituation());
+            statement.setString(8, personne.getNomconjoint());
+            statement.setString(9, personne.getPrenomconjoint());
+            statement.setInt(10, personne.getId()); // Assuming getId() returns the ID of the personne object
+
+            // Exécutez la déclaration préparée pour effectuer la mise à jour
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Personne mise à jour avec succès dans la base de données.");
+            } else {
+                System.out.println("La mise à jour de la personne a échoué.");
+            }
+
+            // Fermez la déclaration et la connexion à la base de données
+            statement.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Gérez les exceptions liées à la base de données ici
+        }
+    }
+
+
+    private void supprimerPersonne (Personne personne) {
         Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationDialog.setTitle("Supprimer la paye");
         confirmationDialog.setHeaderText("Êtes-vous sûr de vouloir supprimer ce paye ?");
@@ -373,6 +460,10 @@ public class PersonneController {
             // Recharger les données depuis la base de données
             loadDataFromDatabase();
         }
+
+    }
+
+    private void payerPersonne (Personne personne) {
 
     }
 
