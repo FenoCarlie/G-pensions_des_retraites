@@ -15,6 +15,8 @@ public class Personne {
     private final StringProperty nomconjoint;
     private final StringProperty prenomconjoint;
 
+    private String numtarif;
+
     public Personne(int id, String im, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
@@ -27,6 +29,14 @@ public class Personne {
         this.situation = new SimpleStringProperty(situation);
         this.nomconjoint = new SimpleStringProperty(nomconjoint);
         this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
+    }
+
+    public String getNumtarif() {
+        return numtarif;
+    }
+
+    public void setNumtarif(String numtarif) {
+        this.numtarif = numtarif;
     }
 
     // Getters and setters for id

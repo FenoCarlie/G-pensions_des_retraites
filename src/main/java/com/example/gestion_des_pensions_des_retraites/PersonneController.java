@@ -12,6 +12,8 @@ import javafx.scene.layout.GridPane;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class PersonneController {
@@ -60,6 +62,9 @@ public class PersonneController {
     private ObservableList<Personne> personnes;
 
     @FXML
+    private Button searchButton;
+
+    @FXML
     private void initialize() {
         personnes = FXCollections.observableArrayList();
 
@@ -85,7 +90,70 @@ public class PersonneController {
                 showContextMenu(event);
             }
         });
+
+        searchButton.setOnAction(event -> {
+            String searchText = filterField.getText().toUpperCase(); // Convertir le texte en majuscules
+            rechercherPersonnes(searchText);
+        });
+
+
     }
+
+    private void rechercherPersonnes(String searchText) {
+        // Créer une requête SQL pour effectuer la recherche en utilisant LIKE
+        String query = "SELECT * FROM personne WHERE nom LIKE ? OR prenoms LIKE ? OR im LIKE ?";
+
+        try (Connection conn = ConnectionDatabase.connect();
+             PreparedStatement statement = conn.prepareStatement(query)) {
+
+            // Définir les paramètres de la requête
+            String searchPattern = "%" + searchText + "%";
+            statement.setString(1, searchPattern);
+            statement.setString(2, searchPattern);
+            statement.setString(3, searchPattern);
+
+            // Exécuter la requête
+            ResultSet resultSet = statement.executeQuery();
+
+            // Créer une liste temporaire pour stocker les résultats de la recherche
+            List<Personne> resultatRecherche = new ArrayList<>();
+
+            // Parcourir les résultats de la requête et créer des objets Personne correspondants
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String im = resultSet.getString("im");
+                String nom = resultSet.getString("nom");
+                String prenoms = resultSet.getString("prenoms");
+                java.sql.Date datenais = resultSet.getDate("datenais");
+                String contact = resultSet.getString("contact");
+                boolean statut = resultSet.getBoolean("statut");
+                String statutText = statut ? "vivant" : "décédé"; // Modification ici
+                String diplome = resultSet.getString("diplome");
+                String situation = resultSet.getString("situation");
+                String nomconjoint = resultSet.getString("nomconjoint");
+                String prenomconjoint = resultSet.getString("prenomconjoint");
+
+                // Format the date using SimpleDateFormat
+                SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+                String formattedDate = dateFormatter.format(datenais);
+
+                // Créer un objet Personne et l'ajouter à la liste des résultats
+                Personne personne = new Personne(id, im, nom, prenoms, formattedDate, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
+                resultatRecherche.add(personne);
+            }
+
+            // Mettre à jour la table avec les résultats de la recherche
+            tbvPersonnes.setItems(FXCollections.observableArrayList(resultatRecherche));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
 
     private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
 
@@ -111,7 +179,7 @@ public class PersonneController {
             supprimerMenuItem.setOnAction(e -> supprimerPersonne(selectedPersonne));
             contextMenu.getItems().add(supprimerMenuItem);
 
-            // Option Supprimer
+            // Option Payer
             MenuItem payerMenuItem = new MenuItem("Payer");
             payerMenuItem.setOnAction(e -> payerPersonne(selectedPersonne));
             contextMenu.getItems().add(payerMenuItem);
@@ -232,6 +300,8 @@ public class PersonneController {
         return diplomeList;
     }
 
+
+
     private boolean validateInputs(String im, String nom, String prenom, LocalDate date, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
         boolean hasError = false;
         if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || date == null || contact.isEmpty() ||
@@ -299,10 +369,6 @@ public class PersonneController {
         }
     }
 
-
-
-
-
     private void modifierPersonne(Personne personne) {
         // Créer une nouvelle fenêtre de dialogue
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -315,12 +381,12 @@ public class PersonneController {
         tfNom.setPromptText("Nom");
         TextField tfPrenoms = new TextField(personne.getPrenoms());
         tfPrenoms.setPromptText("Prénom");
-        DatePicker dpDate = new DatePicker();
+        DatePicker dpDate = new DatePicker(personne.getDatenais());
         dpDate.setPromptText("Date de naissance");
         TextField tfContact = new TextField(personne.getContact());
         tfContact.setPromptText("Contact");
-        TextField tfDiplom = new TextField(personne.getDiplome());
-        tfDiplom.setPromptText("Diplome");
+        TextField tfDiplome = new TextField(personne.getDiplome());
+        tfDiplome.setPromptText("Diplome");
         ComboBox<String> cbSituation = createComboBoxWithPrompt("Situation");
         cbSituation.getItems().addAll("divorcé(e)", "marié(e)", "veuf(ve)");
         TextField tfNomconjoint = new TextField(personne.getNomconjoint());
@@ -330,6 +396,8 @@ public class PersonneController {
 
         // Création de la grille de disposition pour les champs de saisie
         GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
         gridPane.add(new Label("IM:"), 0, 0);
         gridPane.add(tfIm, 1, 0);
         gridPane.add(new Label("Nom:"), 0, 1);
@@ -341,7 +409,7 @@ public class PersonneController {
         gridPane.add(new Label("Contact:"), 0, 4);
         gridPane.add(tfContact, 1, 4);
         gridPane.add(new Label("Diplome:"), 0, 5);
-        gridPane.add(tfDiplom, 1, 5);
+        gridPane.add(tfDiplome, 1, 5);
         gridPane.add(new Label("Situation:"), 0, 6);
         gridPane.add(cbSituation, 1, 6);
         gridPane.add(new Label("Nom conjoint:"), 0, 7);
@@ -364,7 +432,7 @@ public class PersonneController {
         // Écouter les événements de clic sur le bouton de validation
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
             if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(),
-                    tfContact.getText(), tfDiplom.getText(), cbSituation.getValue(),
+                    tfContact.getText(), tfDiplome.getText(), cbSituation.getValue(),
                     tfNomconjoint.getText(), tfPrenomconjoint.getText())) {
                 event.consume();
             }
@@ -379,7 +447,7 @@ public class PersonneController {
             String prenoms = tfPrenoms.getText();
             LocalDate datenais = dpDate.getValue();
             String contact = tfContact.getText();
-            String diplome = tfDiplom.getText();
+            String diplome = tfDiplome.getText();
             String situation = cbSituation.getValue();
             String nomconjoint = tfNomconjoint.getText();
             String prenomconjoint = tfPrenomconjoint.getText();
@@ -463,8 +531,93 @@ public class PersonneController {
 
     }
 
-    private void payerPersonne (Personne personne) {
+    private void payerPersonne(Personnepayer personne) {
+        // Créer une nouvelle fenêtre de dialogue
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Payer");
 
+        TextField tfIm = new TextField(personne.getIm());
+        tfIm.setPromptText("IM");
+
+        // Récupérer le numtarif associé au diplôme dans la table "tarif"
+        String diplome = personne.getDiplome();
+        String numtarif = getNumTarifForDiplome(diplome);
+
+        TextField tfNumtarif = new TextField(numtarif);
+        tfNumtarif.setPromptText("Numéro tarif");
+        DatePicker dpDate = new DatePicker();
+        dpDate.setPromptText("Date");
+
+        // Créer une disposition pour organiser les éléments
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.add(new Label("IM:"), 0, 0);
+        gridPane.add(tfIm, 1, 0);
+        gridPane.add(new Label("Numéro tarif:"), 0, 1);
+        gridPane.add(tfNumtarif, 1, 1);
+        gridPane.add(new Label("Date de paye:"), 0, 2);
+        gridPane.add(dpDate, 1, 2);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Ajouter les boutons "Valider" et "Annuler" à la fenêtre de dialogue
+        ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
+        ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
+
+        // Obtenir le bouton de validation
+        Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
+
+        // Désactiver le bouton de validation par défaut
+        validerButton.setDefaultButton(false);
+
+        // Écouter les événements de clic sur le bouton de validation
+        validerButton.addEventFilter(ActionEvent.ACTION, event -> {
+            if (validateInputs(tfIm.getText(), dpDate.getValue())) {
+                event.consume();
+            }
+        });
+
+        // Attendre que l'utilisateur appuie sur l'un des boutons
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == validerButtonType) {
+            // Effectuer la mise à jour dans la base de données
+            String im = tfIm.getText();
+            String numtarif = tfNumtarif.getText();
+            LocalDate datenais = dpDate.getValue();
+
+            // Mettre à jour les propriétés de la personne
+            personne.setIm(im);
+            personne.setNumtarif(numtarif);
+            personne.setDatenais(datenais.toString());
+
+            // Effectuer la mise à jour dans la base de données
+            addpayetoDatabase(personne);
+        }
+    }
+
+
+    private String getNumTarifForDiplome(String diplome) {
+        String numtarif = "";
+
+        // Effectuer une requête à la base de données pour récupérer le numtarif associé au diplôme
+        String query = "SELECT num_tarif FROM tarif WHERE diplome = ?";
+        try (Connection conn = ConnectionDatabase.connect();
+             PreparedStatement statement = conn.prepareStatement(query)) {
+
+            statement.setString(1, diplome);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                numtarif = resultSet.getString("numtarif");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return numtarif;
     }
 
     private void deleteFromDatabase(Personne personne) {
