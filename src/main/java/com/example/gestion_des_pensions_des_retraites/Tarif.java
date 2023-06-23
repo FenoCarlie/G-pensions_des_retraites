@@ -6,6 +6,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Tarif {
+
     private final IntegerProperty id;
     private final StringProperty numero;
     private final StringProperty diplome;

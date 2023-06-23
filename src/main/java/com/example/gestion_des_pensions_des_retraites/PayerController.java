@@ -1,7 +1,5 @@
 package com.example.gestion_des_pensions_des_retraites;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,24 +10,24 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Optional;
 public class PayerController {
 
     @FXML
     private TableColumn<Payer, Integer> PcId;
+
+    @FXML
+    private TableColumn<Payer, String> PcMontant;
 
     @FXML
     private TableView<Payer> tbvPayers;
@@ -38,14 +36,16 @@ public class PayerController {
     private TableColumn<Payer, String> PcIm;
 
     @FXML
+    private TableColumn<Payer, String> PcNom;
+
+    @FXML
+    private TableColumn<Payer, String> PcPrenoms;
+
+    @FXML
     private TableColumn<Payer, String> PcNum_tarif;
 
     @FXML
     private TableColumn<Payer, String> PcDate;
-
-
-    @FXML
-    private DatePicker dpDate;
 
     private ObservableList<Payer> payers;
 
@@ -55,8 +55,11 @@ public class PayerController {
 
         PcId.setCellValueFactory(data -> data.getValue().idProperty().asObject());
         PcIm.setCellValueFactory(data -> data.getValue().imProperty());
+        PcNom.setCellValueFactory(data -> data.getValue().nomProperty());
+        PcPrenoms.setCellValueFactory(data -> data.getValue().prenomsProperty());
         PcNum_tarif.setCellValueFactory(data -> data.getValue().num_tarifProperty());
         PcDate.setCellValueFactory(data -> data.getValue().dateProperty());
+        PcMontant.setCellValueFactory(data -> data.getValue().montantProperty());
         tbvPayers.setItems(payers);
 
         // Récupérer les données des tarifs depuis la base de données
@@ -117,17 +120,17 @@ public class PayerController {
         TextField tfIm = new TextField(payer.getIm());
         tfIm.setPromptText("IM");
         TextField tfNum_tarif = new TextField(payer.getNum_tarif());
-        tfNum_tarif.setPromptText("Numero tarif");
-        DatePicker dpDate = new DatePicker();
-        dpDate.setPromptText("Date");
+        tfNum_tarif.setPromptText("Numero du tarf");
+        TextField tfDate = new TextField(payer.getDate());
+        tfDate.setPromptText("date");
 
         // Créer une disposition pour organiser les éléments
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
         gridPane.setVgap(10);
         gridPane.addRow(0, new Label("IM:"), tfIm);
-        gridPane.addRow(1, new Label("Numéro du tarif:"), tfNum_tarif);
-        gridPane.addRow(2, new Label("Date:"), dpDate);
+        gridPane.addRow(1, new Label("Numero tarif"), tfNum_tarif);
+        gridPane.addRow(2, new Label("Date:"), tfDate);
 
         dialog.getDialogPane().setContent(gridPane);
 
@@ -145,7 +148,7 @@ public class PayerController {
         // Écouter les événements de clic sur le bouton de validation
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
             // Vérifier les entrées utilisateur et afficher un message d'erreur si nécessaire
-            if (validateInputs(tfIm.getText(), tfNum_tarif.getText(), dpDate.getValue())) {
+            if (validateInputs(tfIm.getText(),tfNum_tarif.getText(), tfDate.getText())) {
                 event.consume(); // Empêcher la fermeture du dialogue
             }
         });
@@ -156,12 +159,12 @@ public class PayerController {
             // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations du tarif ici
             String im = tfIm.getText();
             String num_tarif = tfNum_tarif.getText();
-            LocalDate date = dpDate.getValue();
+            String date = tfDate.getText();
 
             // Mettre à jour les propriétés du tarif
             payer.setIm(im);
             payer.setNum_tarif(num_tarif);
-            payer.setDate(String.valueOf(LocalDate.parse(String.valueOf(date))));
+            payer.setDate(date);
 
             // Mettre à jour le tarif dans la base de données
             updateDatabase(payer);
@@ -171,14 +174,12 @@ public class PayerController {
         }
     }
 
-
-
     private void updateDatabase(Payer payer) {
         Connection conn = ConnectionDatabase.connect();
 
         try {
             // Préparez une instruction SQL pour mettre à jour la paye
-            String updateQuery = "UPDATE payer SET im = ?, num_tarif = ?, date = ? WHERE id = ?";
+            String updateQuery = "UPDATE payer SET im = ?, num_tarif = ?, date = ?::date WHERE id = ?";
 
             // Créez une déclaration préparée en utilisant l'instruction SQL
             PreparedStatement statement = conn.prepareStatement(updateQuery);
@@ -186,9 +187,8 @@ public class PayerController {
             // Définissez les valeurs des paramètres dans la déclaration préparée
             statement.setString(1, payer.getIm());
             statement.setString(2, payer.getNum_tarif());
-            statement.setDate(3, java.sql.Date.valueOf(payer.getDate()));
-            // Convert LocalDate to java.sql.Date
-            statement.setInt(4, payer.getId()); // Assuming getId() returns the ID of the payer object
+            statement.setString(3, payer.getDate());
+            statement.setInt(4, payer.getId());
 
             // Exécutez la déclaration préparée pour effectuer la mise à jour
             int rowsAffected = statement.executeUpdate();
@@ -208,6 +208,8 @@ public class PayerController {
             // Gérez les exceptions liées à la base de données ici
         }
     }
+
+
 
 
     private void supprimerPayer (Payer payer) {
@@ -262,9 +264,9 @@ public class PayerController {
         TextField tfIm = new TextField();
         tfIm.setPromptText("IM");
         TextField tfNum_tarif = new TextField();
-        tfNum_tarif.setPromptText("Numero tarif");
-        DatePicker dpDate = new DatePicker();
-        dpDate.setPromptText("Date");
+        tfNum_tarif.setPromptText("Numéro tarif");
+        TextField tfDate = new TextField();
+        tfDate.setPromptText("yyyy-mm-aa");
 
         // Créer une disposition pour organiser les éléments
         GridPane gridPane = new GridPane();
@@ -272,7 +274,7 @@ public class PayerController {
         gridPane.setVgap(10);
         gridPane.addRow(0, new Label("IM:"), tfIm);
         gridPane.addRow(1, new Label("Numéro du tarif:"), tfNum_tarif);
-        gridPane.addRow(2, new Label("Date:"), dpDate);
+        gridPane.addRow(2, new Label("Date:"), tfDate);
 
         dialog.getDialogPane().setContent(gridPane);
 
@@ -290,7 +292,7 @@ public class PayerController {
         // Écouter les événements de clic sur le bouton de validation
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
             // Vérifier les entrées utilisateur et afficher un message d'erreur si nécessaire
-            if (validateInputs(tfIm.getText(), tfNum_tarif.getText(), dpDate.getValue())) {
+            if (validateInputs(tfIm.getText(), tfNum_tarif.getText(), tfDate.getText())) {
                 event.consume(); // Empêcher la fermeture du dialogue
             }
         });
@@ -301,7 +303,7 @@ public class PayerController {
             // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations du tarif ici
             String im = tfIm.getText();
             String num_tarif = tfNum_tarif.getText();
-            LocalDate date = dpDate.getValue();
+            String date = tfDate.getText();
 
             Payeradd payer = new Payeradd(im, num_tarif, date);
             addToDatabase(payer);
@@ -311,56 +313,52 @@ public class PayerController {
         }
     }
 
-    private boolean validateInputs(String im, String num_tarif, LocalDate date) {
+
+    private boolean validateInputs(String im, String num_tarif, String date) {
         boolean hasError = false;
 
-        if (im.isEmpty() || num_tarif.isEmpty() || date == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur de validation");
-            alert.setHeaderText("Veuillez remplir tous les champs");
-            alert.showAndWait();
+        if (im.isEmpty()) {
+            showErrorAlert("Erreur de validation", "Le champ 'im' est vide.");
+            hasError = true;
+        } else if (num_tarif.isEmpty()) {
+            showErrorAlert("Erreur de validation", "Le champ 'num_tarif' est vide.");
+            hasError = true;
+        } else if (date == null) {
+            showErrorAlert("Erreur de validation", "Le champ 'date' est vide.");
+            hasError = true;
+        } else if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            showErrorAlert("Erreur de validation", "Le champ 'date' doit être au format 'yyyy-mm-dd'.");
             hasError = true;
         } else {
-            try {
-                Connection conn = ConnectionDatabase.connect();
+            try (Connection conn = ConnectionDatabase.connect()) {
                 if (conn != null) {
                     // Vérifier si la valeur de "im" existe dans la table "personne"
                     String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
-                    PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
-                    selectPersonneStatement.setString(1, im);
-                    ResultSet personneResultSet = selectPersonneStatement.executeQuery();
-                    personneResultSet.next();
-                    int personneRowCount = personneResultSet.getInt(1);
-                    personneResultSet.close();
-                    selectPersonneStatement.close();
+                    try (PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery)) {
+                        selectPersonneStatement.setString(1, im);
+                        try (ResultSet personneResultSet = selectPersonneStatement.executeQuery()) {
+                            personneResultSet.next();
+                            int personneRowCount = personneResultSet.getInt(1);
+                            if (personneRowCount == 0) {
+                                showErrorAlert("Erreur de validation", "La valeur de 'im' n'existe pas dans la table 'personne'.");
+                                hasError = true;
+                            }
+                        }
+                    }
 
                     // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
                     String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
-                    PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery);
-                    selectNumTarifStatement.setString(1, num_tarif);
-                    ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery();
-                    numTarifResultSet.next();
-                    int numTarifRowCount = numTarifResultSet.getInt(1);
-                    numTarifResultSet.close();
-                    selectNumTarifStatement.close();
-
-                    if (personneRowCount == 0) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Erreur de validation");
-                        alert.setHeaderText("La valeur de 'im' n'existe pas dans la table 'personne'.");
-                        alert.showAndWait();
-                        hasError = true;
+                    try (PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery)) {
+                        selectNumTarifStatement.setString(1, num_tarif);
+                        try (ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery()) {
+                            numTarifResultSet.next();
+                            int numTarifRowCount = numTarifResultSet.getInt(1);
+                            if (numTarifRowCount == 0) {
+                                showErrorAlert("Erreur de validation", "La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
+                                hasError = true;
+                            }
+                        }
                     }
-
-                    if (numTarifRowCount == 0) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Erreur de validation");
-                        alert.setHeaderText("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
-                        alert.showAndWait();
-                        hasError = true;
-                    }
-
-                    conn.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -368,6 +366,13 @@ public class PayerController {
         }
 
         return hasError;
+    }
+
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(message);
+        alert.showAndWait();
     }
 
 
@@ -380,53 +385,51 @@ public class PayerController {
     }
 
     private void addToDatabase(Payeradd payer) {
-        try {
-            Connection conn = ConnectionDatabase.connect();
-
+        try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
                 // Vérifier si la valeur de "im" existe dans la table "personne"
                 String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
-                PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery);
-                selectPersonneStatement.setString(1, payer.getIm());
-                ResultSet personneResultSet = selectPersonneStatement.executeQuery();
-                personneResultSet.next();
-                int personneRowCount = personneResultSet.getInt(1);
-                personneResultSet.close();
-                selectPersonneStatement.close();
+                try (PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery)) {
+                    selectPersonneStatement.setString(1, payer.getIm());
+                    try (ResultSet personneResultSet = selectPersonneStatement.executeQuery()) {
+                        personneResultSet.next();
+                        int personneRowCount = personneResultSet.getInt(1);
 
-                // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
-                String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
-                PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery);
-                selectNumTarifStatement.setString(1, payer.getNumTarif());
-                ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery();
-                numTarifResultSet.next();
-                int numTarifRowCount = numTarifResultSet.getInt(1);
-                numTarifResultSet.close();
-                selectNumTarifStatement.close();
+                        // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
+                        String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
+                        try (PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery)) {
+                            selectNumTarifStatement.setString(1, payer.getNumTarif());
+                            try (ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery()) {
+                                numTarifResultSet.next();
+                                int numTarifRowCount = numTarifResultSet.getInt(1);
 
-                if (personneRowCount > 0 && numTarifRowCount > 0) {
-                    // Insérer le nouveau tarif
-                    String insertQuery = "INSERT INTO payer (im, num_tarif, date) VALUES (?, ?, ?)";
-                    PreparedStatement insertStatement = conn.prepareStatement(insertQuery);
-                    insertStatement.setString(1, payer.getIm());
-                    insertStatement.setString(2, payer.getNumTarif());
-                    insertStatement.setDate(3, java.sql.Date.valueOf(payer.getDate()));
-                    insertStatement.executeUpdate();
-                    insertStatement.close();
+                                if (personneRowCount > 0 && numTarifRowCount > 0) {
+                                    // Insérer le nouveau tarif
+                                    String insertQuery = "INSERT INTO payer (im, num_tarif, date) VALUES (?, ?, ?)";
+                                    try (PreparedStatement insertStatement = conn.prepareStatement(insertQuery)) {
+                                        insertStatement.setString(1, payer.getIm());
+                                        insertStatement.setString(2, payer.getNumTarif());
+                                        insertStatement.setString(3, payer.getDate());
+                                        insertStatement.executeUpdate();
+                                    }
 
-                    System.out.println("Le tarif a été ajouté avec succès.");
-                } else {
-                    if (personneRowCount == 0) {
-                        showErrorMessage("La valeur de 'im' n'existe pas dans la table 'personne'.");
-                    }
-                    if (numTarifRowCount == 0) {
-                        showErrorMessage("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
+                                    System.out.println("Le tarif a été ajouté avec succès.");
+                                } else {
+                                    if (personneRowCount == 0) {
+                                        showErrorMessage("La valeur de 'im' n'existe pas dans la table 'personne'.");
+                                    }
+                                    if (numTarifRowCount == 0) {
+                                        showErrorMessage("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
-                conn.close();
+                System.out.println("Fermeture de la connexion à la base de données.");
             } else {
                 showErrorMessage("Échec de la connexion à la base de données.");
             }
@@ -437,28 +440,35 @@ public class PayerController {
 
 
     private void loadDataFromDatabase() {
-        // Clear existing data
+        // Effacer les données existantes
         payers.clear();
 
         try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
-                // Retrieve payers from the database
-                String query = "SELECT * FROM payer";
+                // Récupérer les payeurs depuis la base de données avec le nom et le prénom de la table personne liée
+                String query = "SELECT payer.id AS pa_id, payer.date AS pa_date,personne.im AS pe_im, tarif.num_tarif AS t_num_tarif, personne.nom AS pe_nom, personne.prenoms AS pe_prenoms, tarif.montant AS t_montant FROM payer JOIN tarif ON payer.num_tarif = tarif.num_tarif JOIN personne ON payer.im = personne.im;";
                 try (PreparedStatement statement = conn.prepareStatement(query);
                      ResultSet resultSet = statement.executeQuery()) {
 
-                    // Add payers to the observable list
+                    // Ajouter les payeurs à la liste observable
                     while (resultSet.next()) {
-                        int id = resultSet.getInt("id");
-                        String im = resultSet.getString("im");
-                        String num_tarif = resultSet.getString("num_tarif");
-                        java.sql.Date date = resultSet.getDate("date");
+                        int id = resultSet.getInt("pa_id");
+                        int montant = resultSet.getInt("t_montant");
+                        String date = resultSet.getString("pa_date");
+                        String nom = resultSet.getString("pe_nom");
+                        String prenoms = resultSet.getString("pe_prenoms");
+                        String num_tarif = resultSet.getString("t_num_tarif");
+                        String im = resultSet.getString("pe_im");
 
-                        // Format the date using SimpleDateFormat
+                        /*// Formater la date en utilisant SimpleDateFormat
                         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-                        String formattedDate = dateFormatter.format(date);
+                        String formattedDate = dateFormatter.format(date);*/
 
-                        Payer payer = new Payer(id, im, num_tarif, formattedDate);
+                        // Formater le montant avec des séparateurs de milliers et " Ar" à la fin
+                        NumberFormat numberFormat = new DecimalFormat("#,###");
+                        String formattedMontant = numberFormat.format(montant) + " Ar";
+
+                        Payer payer = new Payer(id, im, nom, prenoms, num_tarif, date, formattedMontant);
                         payers.add(payer);
                     }
                 } catch (SQLException e) {
@@ -471,4 +481,7 @@ public class PayerController {
             e.printStackTrace();
         }
     }
+
+
+
 }

@@ -179,11 +179,6 @@ public class PersonneController {
             supprimerMenuItem.setOnAction(e -> supprimerPersonne(selectedPersonne));
             contextMenu.getItems().add(supprimerMenuItem);
 
-            // Option Payer
-            MenuItem payerMenuItem = new MenuItem("Payer");
-            payerMenuItem.setOnAction(e -> payerPersonne(selectedPersonne));
-            contextMenu.getItems().add(payerMenuItem);
-
             contextMenu.show(tbvPersonnes, event.getScreenX(), event.getScreenY());
 
             // Gérer l'événement de clic droit pour masquer le menu contextuel
@@ -381,7 +376,7 @@ public class PersonneController {
         tfNom.setPromptText("Nom");
         TextField tfPrenoms = new TextField(personne.getPrenoms());
         tfPrenoms.setPromptText("Prénom");
-        DatePicker dpDate = new DatePicker(personne.getDatenais());
+        DatePicker dpDate = new DatePicker();
         dpDate.setPromptText("Date de naissance");
         TextField tfContact = new TextField(personne.getContact());
         tfContact.setPromptText("Contact");
@@ -529,72 +524,6 @@ public class PersonneController {
             loadDataFromDatabase();
         }
 
-    }
-
-    private void payerPersonne(Personnepayer personne) {
-        // Créer une nouvelle fenêtre de dialogue
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Payer");
-
-        TextField tfIm = new TextField(personne.getIm());
-        tfIm.setPromptText("IM");
-
-        // Récupérer le numtarif associé au diplôme dans la table "tarif"
-        String diplome = personne.getDiplome();
-        String numtarif = getNumTarifForDiplome(diplome);
-
-        TextField tfNumtarif = new TextField(numtarif);
-        tfNumtarif.setPromptText("Numéro tarif");
-        DatePicker dpDate = new DatePicker();
-        dpDate.setPromptText("Date");
-
-        // Créer une disposition pour organiser les éléments
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.add(new Label("IM:"), 0, 0);
-        gridPane.add(tfIm, 1, 0);
-        gridPane.add(new Label("Numéro tarif:"), 0, 1);
-        gridPane.add(tfNumtarif, 1, 1);
-        gridPane.add(new Label("Date de paye:"), 0, 2);
-        gridPane.add(dpDate, 1, 2);
-
-        dialog.getDialogPane().setContent(gridPane);
-
-        // Ajouter les boutons "Valider" et "Annuler" à la fenêtre de dialogue
-        ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
-        ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
-
-        // Obtenir le bouton de validation
-        Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
-
-        // Désactiver le bouton de validation par défaut
-        validerButton.setDefaultButton(false);
-
-        // Écouter les événements de clic sur le bouton de validation
-        validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            if (validateInputs(tfIm.getText(), dpDate.getValue())) {
-                event.consume();
-            }
-        });
-
-        // Attendre que l'utilisateur appuie sur l'un des boutons
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == validerButtonType) {
-            // Effectuer la mise à jour dans la base de données
-            String im = tfIm.getText();
-            String numtarif = tfNumtarif.getText();
-            LocalDate datenais = dpDate.getValue();
-
-            // Mettre à jour les propriétés de la personne
-            personne.setIm(im);
-            personne.setNumtarif(numtarif);
-            personne.setDatenais(datenais.toString());
-
-            // Effectuer la mise à jour dans la base de données
-            addpayetoDatabase(personne);
-        }
     }
 
 

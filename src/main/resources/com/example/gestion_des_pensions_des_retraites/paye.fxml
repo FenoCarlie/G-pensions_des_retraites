@@ -49,10 +49,13 @@
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                            <columns>
-                              <TableColumn fx:id="PcId" prefWidth="75.0" text="Id" />
+                              <TableColumn fx:id="PcId" prefWidth="75.0" text="Id" visible="false" />
                               <TableColumn fx:id="PcIm" prefWidth="354.0" text="IM" />
-                              <TableColumn fx:id="PcNum_tarif" prefWidth="397.0" text="Numero tarif" />
-                              <TableColumn fx:id="PcDate" prefWidth="279.0" text="Date" />
+                              <TableColumn fx:id="PcNom" prefWidth="354.0" text="Nom" />
+                              <TableColumn fx:id="PcPrenoms" prefWidth="354.0" text="Prenom" />
+                              <TableColumn fx:id="PcMontant" prefWidth="354.0" text="Montant" />
+                              <TableColumn fx:id="PcDate" prefWidth="279.0" text="Date de paye" />
+                              <TableColumn fx:id="PcNum_tarif" prefWidth="279.0" text="Num_tarif" visible="false" />
                            </columns>
                         </TableView>
                      </center>
