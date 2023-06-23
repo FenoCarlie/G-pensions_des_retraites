@@ -10,7 +10,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +18,10 @@ import java.util.Optional;
 public class PersonneController {
     @FXML
     private TableColumn<Personne, String> PcContact;
+
+    @FXML
+    private TableColumn<Personne, String> PcNumtarif;
+
 
     @FXML
     private TableColumn<Personne, String> PcDatenais;
@@ -70,6 +73,7 @@ public class PersonneController {
 
         PcId.setCellValueFactory(data -> data.getValue().idProperty().asObject());
         PcIm.setCellValueFactory(data -> data.getValue().imProperty());
+        PcNumtarif.setCellValueFactory(data -> data.getValue().numtarifProperty());
         PcNom.setCellValueFactory(data -> data.getValue().nomProperty());
         PcPrenoms.setCellValueFactory(data -> data.getValue().prenomsProperty());
         PcDatenais.setCellValueFactory(data -> data.getValue().datenaisProperty());
@@ -95,8 +99,6 @@ public class PersonneController {
             String searchText = filterField.getText().toUpperCase(); // Convertir le texte en majuscules
             rechercherPersonnes(searchText);
         });
-
-
     }
 
     private void rechercherPersonnes(String searchText) {
@@ -124,7 +126,7 @@ public class PersonneController {
                 String im = resultSet.getString("im");
                 String nom = resultSet.getString("nom");
                 String prenoms = resultSet.getString("prenoms");
-                java.sql.Date datenais = resultSet.getDate("datenais");
+                String datenais = resultSet.getString("datenais");
                 String contact = resultSet.getString("contact");
                 boolean statut = resultSet.getBoolean("statut");
                 String statutText = statut ? "vivant" : "décédé"; // Modification ici
@@ -133,12 +135,9 @@ public class PersonneController {
                 String nomconjoint = resultSet.getString("nomconjoint");
                 String prenomconjoint = resultSet.getString("prenomconjoint");
 
-                // Format the date using SimpleDateFormat
-                SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-                String formattedDate = dateFormatter.format(datenais);
 
                 // Créer un objet Personne et l'ajouter à la liste des résultats
-                Personne personne = new Personne(id, im, nom, prenoms, formattedDate, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
+                Personne personne = new Personne(id, im, numtarif, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
                 resultatRecherche.add(personne);
             }
 
@@ -179,6 +178,11 @@ public class PersonneController {
             supprimerMenuItem.setOnAction(e -> supprimerPersonne(selectedPersonne));
             contextMenu.getItems().add(supprimerMenuItem);
 
+            // Option Payer
+            MenuItem payerMenuItem = new MenuItem("Payer");
+            payerMenuItem.setOnAction(e -> payerPersonne(selectedPersonne));
+            contextMenu.getItems().add(payerMenuItem);
+
             contextMenu.show(tbvPersonnes, event.getScreenX(), event.getScreenY());
 
             // Gérer l'événement de clic droit pour masquer le menu contextuel
@@ -202,8 +206,7 @@ public class PersonneController {
         TextField tfIm = createTextFieldWithPrompt("IM");
         TextField tfNom = createTextFieldWithPrompt("Nom");
         TextField tfPrenoms = createTextFieldWithPrompt("Prénom");
-        DatePicker dpDate = new DatePicker();
-        dpDate.setPromptText("Date de naissance");
+        TextField tfdatenais = createTextFieldWithPrompt("yyyy-mm-dd");
         TextField tfContact = createTextFieldWithPrompt("Contact");
         ComboBox<String> cbDiplome = createComboBoxWithPrompt("Diplôme");
         ComboBox<String> cbSituation = createComboBoxWithPrompt("Situation");
@@ -215,7 +218,7 @@ public class PersonneController {
         gridPane.addRow(0, new Label("IM:"), tfIm);
         gridPane.addRow(1, new Label("Nom:"), tfNom);
         gridPane.addRow(2, new Label("Prénom:"), tfPrenoms);
-        gridPane.addRow(3, new Label("Date de naissance:"), dpDate);
+        gridPane.addRow(3, new Label("Date de naissance:"), tfdatenais);
         gridPane.addRow(4, new Label("Contact:"), tfContact);
         gridPane.addRow(5, new Label("Diplôme:"), cbDiplome);
         gridPane.addRow(6, new Label("Situation:"), cbSituation);
@@ -235,7 +238,7 @@ public class PersonneController {
         validerButton.setDefaultButton(false);
 
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(),
+            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), tfdatenais.getText(),
                     cbDiplome.getValue(), tfContact.getText(), cbSituation.getValue(),
                     tfNomConjoint.getText(), tfPrenomConjoint.getText())) {
                 event.consume();
@@ -297,9 +300,9 @@ public class PersonneController {
 
 
 
-    private boolean validateInputs(String im, String nom, String prenom, LocalDate date, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
+    private boolean validateInputs(String im, String nom, String prenom, String datenais, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
         boolean hasError = false;
-        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || date == null || contact.isEmpty() ||
+        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || datenais == null || contact.isEmpty() ||
                 situation.isEmpty() || nomconjoint.isEmpty() || prenomconjoint.isEmpty()) {
             showErrorMessage("Veuillez remplir tous les champs.");
             hasError = true;
@@ -364,7 +367,21 @@ public class PersonneController {
         }
     }
 
+    private void payerPersonne (Personne personne) {
+        // Créer une nouvelle fenêtre de dialogue
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Payer une personne");
+
+        // Création des champs de saisie
+        TextField tfIm = new TextField(personne.getIm());
+        tfIm.setPromptText("IM");
+        TextField tfNom = new TextField(personne.getNom());
+        tfNom.setPromptText("Nom");
+
+    }
+
     private void modifierPersonne(Personne personne) {
+
         // Créer une nouvelle fenêtre de dialogue
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Modifier une personne");
@@ -376,8 +393,8 @@ public class PersonneController {
         tfNom.setPromptText("Nom");
         TextField tfPrenoms = new TextField(personne.getPrenoms());
         tfPrenoms.setPromptText("Prénom");
-        DatePicker dpDate = new DatePicker();
-        dpDate.setPromptText("Date de naissance");
+        TextField tfDatenais = new TextField(personne.getDatenais());
+        tfDatenais.setPromptText("Date de naissance");
         TextField tfContact = new TextField(personne.getContact());
         tfContact.setPromptText("Contact");
         TextField tfDiplome = new TextField(personne.getDiplome());
@@ -393,24 +410,15 @@ public class PersonneController {
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
         gridPane.setVgap(10);
-        gridPane.add(new Label("IM:"), 0, 0);
-        gridPane.add(tfIm, 1, 0);
-        gridPane.add(new Label("Nom:"), 0, 1);
-        gridPane.add(tfNom, 1, 1);
-        gridPane.add(new Label("Prénom:"), 0, 2);
-        gridPane.add(tfPrenoms, 1, 2);
-        gridPane.add(new Label("Date de naissance:"), 0, 3);
-        gridPane.add(dpDate, 1, 3);
-        gridPane.add(new Label("Contact:"), 0, 4);
-        gridPane.add(tfContact, 1, 4);
-        gridPane.add(new Label("Diplome:"), 0, 5);
-        gridPane.add(tfDiplome, 1, 5);
-        gridPane.add(new Label("Situation:"), 0, 6);
-        gridPane.add(cbSituation, 1, 6);
-        gridPane.add(new Label("Nom conjoint:"), 0, 7);
-        gridPane.add(tfNomconjoint, 1, 7);
-        gridPane.add(new Label("Prénom conjoint:"), 0, 8);
-        gridPane.add(tfPrenomconjoint, 1, 8);
+        gridPane.addRow(0, new Label("IM:"), tfIm);
+        gridPane.addRow(1, new Label("Nom:"), tfNom);
+        gridPane.addRow(2, new Label("Prénom:"), tfPrenoms);
+        gridPane.addRow(3, new Label("Date de naissance:"), tfDatenais);
+        gridPane.addRow(4, new Label("Contact:"), tfContact);
+        gridPane.addRow(5, new Label("Diplome:"), tfDiplome);
+        gridPane.addRow(6, new Label("Situation:"), cbSituation);
+        gridPane.addRow(7, new Label("Nom conjoint:"), tfNomconjoint);
+        gridPane.addRow(8, new Label("Prénom conjoint:"), tfPrenomconjoint);
 
         dialog.getDialogPane().setContent(gridPane);
 
@@ -426,7 +434,7 @@ public class PersonneController {
 
         // Écouter les événements de clic sur le bouton de validation
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), dpDate.getValue(),
+            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), tfDatenais.getText(),
                     tfContact.getText(), tfDiplome.getText(), cbSituation.getValue(),
                     tfNomconjoint.getText(), tfPrenomconjoint.getText())) {
                 event.consume();
@@ -440,7 +448,7 @@ public class PersonneController {
             String im = tfIm.getText();
             String nom = tfNom.getText();
             String prenoms = tfPrenoms.getText();
-            LocalDate datenais = dpDate.getValue();
+            String datenais = tfDatenais.getText(); // Supposons que la date est une chaîne de caractères
             String contact = tfContact.getText();
             String diplome = tfDiplome.getText();
             String situation = cbSituation.getValue();
@@ -451,7 +459,7 @@ public class PersonneController {
             personne.setIm(im);
             personne.setNom(nom);
             personne.setPrenoms(prenoms);
-            personne.setDatenais(String.valueOf(datenais));
+            personne.setDatenais(datenais);
             personne.setContact(contact);
             personne.setDiplome(diplome);
             personne.setSituation(situation);
@@ -467,12 +475,13 @@ public class PersonneController {
     }
 
 
+
     private void updateDatabase(Personne personne) {
         Connection conn = ConnectionDatabase.connect();
 
         try {
             // Préparez une instruction SQL pour mettre à jour la personne
-            String updateQuery = "UPDATE personne SET im = ?, nom = ?, prenoms = ?, datenais = ?, contact = ?, diplome = ?, situation = ?, nom_conjoint = ?, prenom_conjoint = ? WHERE id = ?";
+            String updateQuery = "UPDATE personne SET im = ?, nom = ?, prenoms = ?, datenais = ?::date , contact = ?, diplome = ?, situation = ?, nomconjoint = ?, prenomconjoint = ? WHERE id = ?";
 
             // Créez une déclaration préparée en utilisant l'instruction SQL
             PreparedStatement statement = conn.prepareStatement(updateQuery);
@@ -481,7 +490,7 @@ public class PersonneController {
             statement.setString(1, personne.getIm());
             statement.setString(2, personne.getNom());
             statement.setString(3, personne.getPrenoms());
-            statement.setDate(4, java.sql.Date.valueOf(personne.getDatenais()));
+            statement.setString(4, personne.getDatenais());
             statement.setString(5, personne.getContact());
             statement.setString(6, personne.getDiplome());
             statement.setString(7, personne.getSituation());
@@ -591,7 +600,7 @@ public class PersonneController {
                         String im = resultSet.getString("im");
                         String nom = resultSet.getString("nom");
                         String prenoms = resultSet.getString("prenoms");
-                        java.sql.Date datenais = resultSet.getDate("datenais");
+                        String datenais = resultSet.getString("datenais");
                         String contact = resultSet.getString("contact");
                         boolean statut = resultSet.getBoolean("statut");
                         String statutText = statut ? "vivant" : "décédé"; // Modification ici
@@ -600,11 +609,7 @@ public class PersonneController {
                         String nomconjoint = resultSet.getString("nomconjoint");
                         String prenomconjoint = resultSet.getString("prenomconjoint");
 
-                        // Format the date using SimpleDateFormat
-                        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-                        String formattedDate = dateFormatter.format(datenais);
-
-                        Personne personne = new Personne( id, im, nom, prenoms, formattedDate, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
+                        Personne personne = new Personne( id, im, numtarif, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
                         personnes.add(personne);
                     }
                 } catch (SQLException e) {

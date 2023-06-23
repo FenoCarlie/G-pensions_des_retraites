@@ -1,8 +1,8 @@
 module com.example.gestion_des_pensions_des_retraites {
     requires javafx.controls;
     requires javafx.fxml;
-    requires org.slf4j;
     requires java.sql;
+    requires org.slf4j;
 
 
     opens com.example.gestion_des_pensions_des_retraites to javafx.fxml;

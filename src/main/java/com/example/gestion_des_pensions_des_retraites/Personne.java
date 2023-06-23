@@ -5,6 +5,7 @@ import javafx.beans.property.*;
 public class Personne {
     private final IntegerProperty id;
     private final StringProperty im;
+    private final StringProperty numtarif;
     private final StringProperty nom;
     private final StringProperty prenoms;
     private final StringProperty datenais;
@@ -15,11 +16,10 @@ public class Personne {
     private final StringProperty nomconjoint;
     private final StringProperty prenomconjoint;
 
-    private String numtarif;
-
-    public Personne(int id, String im, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
+    public Personne(int id, String im, String numtarif, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
+        this.numtarif = new SimpleStringProperty(numtarif);
         this.nom = new SimpleStringProperty(nom);
         this.prenoms = new SimpleStringProperty(prenoms);
         this.datenais = new SimpleStringProperty(datenais);
@@ -31,15 +31,23 @@ public class Personne {
         this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
     }
 
+    // Getters and setters for id
     public String getNumtarif() {
+        return numtarif.get();
+    }
+
+    public StringProperty numtarifProperty() {
         return numtarif;
     }
 
     public void setNumtarif(String numtarif) {
-        this.numtarif = numtarif;
+        this.numtarif.set(numtarif);
     }
 
-    // Getters and setters for id
+    public String getStatut() {
+        return statut.get();
+    }
+
     public int getId() {
         return id.get();
     }

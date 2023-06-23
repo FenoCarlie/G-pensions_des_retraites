@@ -52,6 +52,7 @@
                            <columns>
                               <TableColumn fx:id="PcId" prefWidth="75.0" text="Id" visible="false" />
                               <TableColumn fx:id="PcIm" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="IM" />
+                              <TableColumn fx:id="PcNumtarif" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Numtarif" />
                               <TableColumn fx:id="PcNom" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom" />
                               <TableColumn fx:id="PcPrenoms" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prénoms" />
                               <TableColumn fx:id="PcDatenais" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Date de naissense" />

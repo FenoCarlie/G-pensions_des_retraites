@@ -6,7 +6,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseEvent;
@@ -32,21 +35,33 @@ public class  Controller implements Initializable {
     private BorderPane bp;
 
     @FXML
-    private AnchorPane ap;
+    private BorderPane ap;
 
     @FXML
-    private TableColumn<Home, Integer> HcEffectif;
+    private TableColumn<Acceulle, Integer> HcEffectif;
 
     @FXML
-    private TableColumn<Home, String> HcStatut;
+    private TableColumn<Acceulle, String> HcStatut;
 
     @FXML
-    private TableView<Home> tbvHome;
+    private TableView<Acceulle> tbvHome;
 
-    private ObservableList<Home> homes;
+    private ObservableList<Acceulle> homes;
+
+    @FXML
+    private BarChart<String, Number> histogram;
+
+    @FXML
+    private CategoryAxis xAxis;
+
+    @FXML
+    private NumberAxis yAxis;
+
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
         homes = FXCollections.observableArrayList();
 
         HcStatut.setCellValueFactory(data -> data.getValue().statutProperty());
@@ -54,11 +69,21 @@ public class  Controller implements Initializable {
         tbvHome.setItems(homes);
 
         afficherPersonnesParStatut();
+
+        // Créer et afficher l'histogramme
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Effectif par statut");
+        for (Acceulle home : homes) {
+            series.getData().add(new XYChart.Data<>(home.getStatut(), home.getEffectif()));
+        }
+
+        histogram.getData().add(series);
     }
 
     @FXML
-    private void home(MouseEvent event){
+    private void home(MouseEvent event) {
         bp.setCenter(ap);
+        afficherPersonnesParStatut();
     }
 
     @FXML
@@ -95,7 +120,7 @@ public class  Controller implements Initializable {
                         boolean statut = resultSet.getBoolean("statut");
                         String statutText = statut ? "vivant" : "décédé"; // Modification ici
 
-                        Home home = new Home(effectif, statutText);
+                        Acceulle home = new Acceulle(effectif, statutText);
                         homes.add(home);
                     }
                 } catch (SQLException e) {

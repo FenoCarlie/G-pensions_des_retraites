@@ -10,15 +10,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.Optional;
 public class PayerController {
@@ -49,6 +46,17 @@ public class PayerController {
 
     private ObservableList<Payer> payers;
 
+
+    @FXML
+    private DatePicker dpDebut;
+
+    @FXML
+    private DatePicker dpFin;
+
+    @FXML
+    private Button searchButton;
+
+
     @FXML
     private void initialize() {
         payers = FXCollections.observableArrayList();
@@ -71,6 +79,57 @@ public class PayerController {
                 showContextMenu(event);
             }
         });
+        searchButton.setOnAction(event -> {
+            if (dpDebut.getValue() == null || dpFin.getValue() == null) {
+                loadDataFromDatabase();
+            } else {
+                rechercheEntreDeuxDate();
+            }
+        });
+    }
+
+    private void rechercheEntreDeuxDate() {
+        LocalDate debut = dpDebut.getValue();
+        LocalDate fin = dpFin.getValue();
+
+        if (debut != null && fin != null) {
+            // Convertir les dates en format compatible avec la base de données (par exemple, au format "yyyy-MM-dd")
+            String dateDebut = debut.toString();
+            String dateFin = fin.toString();
+
+            // Exécuter une requête SQL pour récupérer les pensions payées entre les deux dates
+            // Utilisez la clause WHERE pour filtrer les résultats en fonction des dates
+            String query = "SELECT * FROM payer WHERE date >= ? AND date <= ?";
+            try (Connection conn = ConnectionDatabase.connect();
+                 PreparedStatement statement = conn.prepareStatement(query)) {
+
+                statement.setString(1, dateDebut);
+                statement.setString(2, dateFin);
+
+                ResultSet resultSet = statement.executeQuery();
+
+                // Traiter les résultats de la requête et afficher les pensions payées
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    String im = resultSet.getString("im");
+                    String num_tarif = resultSet.getString("num_tarif");
+                    String date = resultSet.getString("date");
+                    String montant = resultSet.getString("montant");
+                    String nom = resultSet.getString("nom");
+                    String prenoms = resultSet.getString("prenoms");
+
+                    Payer payer = new Payer(id, im, num_tarif, date, montant, nom, prenoms);
+                    payers.add(payer);
+                }
+
+                // Fermer le ResultSet et la connexion à la base de données
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            showErrorAlert("Erreur de saisie", "Veuillez sélectionner une date de début et une date de fin.");
+        }
     }
 
     private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
@@ -174,6 +233,8 @@ public class PayerController {
         }
     }
 
+
+
     private void updateDatabase(Payer payer) {
         Connection conn = ConnectionDatabase.connect();
 
@@ -254,65 +315,6 @@ public class PayerController {
         }
     }
 
-    @FXML
-    private void ajouterPayer() {
-        // Créer une nouvelle fenêtre de dialogue
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Ajouter de paye");
-
-        // Créer des champs de saisie pour les informations du paye
-        TextField tfIm = new TextField();
-        tfIm.setPromptText("IM");
-        TextField tfNum_tarif = new TextField();
-        tfNum_tarif.setPromptText("Numéro tarif");
-        TextField tfDate = new TextField();
-        tfDate.setPromptText("yyyy-mm-aa");
-
-        // Créer une disposition pour organiser les éléments
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.addRow(0, new Label("IM:"), tfIm);
-        gridPane.addRow(1, new Label("Numéro du tarif:"), tfNum_tarif);
-        gridPane.addRow(2, new Label("Date:"), tfDate);
-
-        dialog.getDialogPane().setContent(gridPane);
-
-        // Ajouter les boutons "Valider" et "Annuler" à la fenêtre de dialogue
-        ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
-        ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
-
-        // Obtenir le bouton de validation
-        Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
-
-        // Désactiver le bouton de validation par défaut
-        validerButton.setDefaultButton(false);
-
-        // Écouter les événements de clic sur le bouton de validation
-        validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            // Vérifier les entrées utilisateur et afficher un message d'erreur si nécessaire
-            if (validateInputs(tfIm.getText(), tfNum_tarif.getText(), tfDate.getText())) {
-                event.consume(); // Empêcher la fermeture du dialogue
-            }
-        });
-
-        // Attendre que l'utilisateur appuie sur l'un des boutons
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == validerButtonType) {
-            // L'utilisateur a appuyé sur le bouton "Valider", vous pouvez traiter les informations du tarif ici
-            String im = tfIm.getText();
-            String num_tarif = tfNum_tarif.getText();
-            String date = tfDate.getText();
-
-            Payeradd payer = new Payeradd(im, num_tarif, date);
-            addToDatabase(payer);
-
-            // Recharger les données depuis la base de données
-            loadDataFromDatabase();
-        }
-    }
-
 
     private boolean validateInputs(String im, String num_tarif, String date) {
         boolean hasError = false;
@@ -384,61 +386,6 @@ public class PayerController {
         alert.showAndWait();
     }
 
-    private void addToDatabase(Payeradd payer) {
-        try (Connection conn = ConnectionDatabase.connect()) {
-            if (conn != null) {
-                System.out.println("La connexion à la base de données a été établie avec succès.");
-
-                // Vérifier si la valeur de "im" existe dans la table "personne"
-                String selectPersonneQuery = "SELECT COUNT(*) FROM personne WHERE im = ?";
-                try (PreparedStatement selectPersonneStatement = conn.prepareStatement(selectPersonneQuery)) {
-                    selectPersonneStatement.setString(1, payer.getIm());
-                    try (ResultSet personneResultSet = selectPersonneStatement.executeQuery()) {
-                        personneResultSet.next();
-                        int personneRowCount = personneResultSet.getInt(1);
-
-                        // Vérifier si la valeur de "num_tarif" existe dans la table correspondante
-                        String selectNumTarifQuery = "SELECT COUNT(*) FROM tarif WHERE num_tarif = ?";
-                        try (PreparedStatement selectNumTarifStatement = conn.prepareStatement(selectNumTarifQuery)) {
-                            selectNumTarifStatement.setString(1, payer.getNumTarif());
-                            try (ResultSet numTarifResultSet = selectNumTarifStatement.executeQuery()) {
-                                numTarifResultSet.next();
-                                int numTarifRowCount = numTarifResultSet.getInt(1);
-
-                                if (personneRowCount > 0 && numTarifRowCount > 0) {
-                                    // Insérer le nouveau tarif
-                                    String insertQuery = "INSERT INTO payer (im, num_tarif, date) VALUES (?, ?, ?)";
-                                    try (PreparedStatement insertStatement = conn.prepareStatement(insertQuery)) {
-                                        insertStatement.setString(1, payer.getIm());
-                                        insertStatement.setString(2, payer.getNumTarif());
-                                        insertStatement.setString(3, payer.getDate());
-                                        insertStatement.executeUpdate();
-                                    }
-
-                                    System.out.println("Le tarif a été ajouté avec succès.");
-                                } else {
-                                    if (personneRowCount == 0) {
-                                        showErrorMessage("La valeur de 'im' n'existe pas dans la table 'personne'.");
-                                    }
-                                    if (numTarifRowCount == 0) {
-                                        showErrorMessage("La valeur de 'num_tarif' n'existe pas dans la table correspondante.");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                System.out.println("Fermeture de la connexion à la base de données.");
-            } else {
-                showErrorMessage("Échec de la connexion à la base de données.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     private void loadDataFromDatabase() {
         // Effacer les données existantes
         payers.clear();
@@ -460,10 +407,6 @@ public class PayerController {
                         String num_tarif = resultSet.getString("t_num_tarif");
                         String im = resultSet.getString("pe_im");
 
-                        /*// Formater la date en utilisant SimpleDateFormat
-                        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
-                        String formattedDate = dateFormatter.format(date);*/
-
                         // Formater le montant avec des séparateurs de milliers et " Ar" à la fin
                         NumberFormat numberFormat = new DecimalFormat("#,###");
                         String formattedMontant = numberFormat.format(montant) + " Ar";
@@ -481,7 +424,4 @@ public class PayerController {
             e.printStackTrace();
         }
     }
-
-
-
 }
