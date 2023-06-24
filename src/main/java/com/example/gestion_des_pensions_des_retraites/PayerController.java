@@ -99,27 +99,28 @@ public class PayerController {
                 statement.setDate(1, java.sql.Date.valueOf(debut));
                 statement.setDate(2, java.sql.Date.valueOf(fin));
 
-                ResultSet resultSet = statement.executeQuery();
+                try (ResultSet resultSet = statement.executeQuery()) {
 
-                List<Payer> tempPayers = new ArrayList<>(); // Créer une liste temporaire pour stocker les résultats de la recherche
+                    List<Payer> tempPayers = new ArrayList<>(); // Créer une liste temporaire pour stocker les résultats de la recherche
 
-                while (resultSet.next()) {
-                    // Récupération des valeurs de colonnes à partir du ResultSet
-                    int id = resultSet.getInt("id");
-                    String im = resultSet.getString("im");
-                    String num_tarif = resultSet.getString("num_tarif");
-                    String date = String.valueOf(resultSet.getDate("date"));
-                    String montant = resultSet.getString("montant");
-                    String nom = resultSet.getString("nom");
-                    String prenoms = resultSet.getString("prenoms");
+                    while (resultSet.next()) {
+                        // Récupération des valeurs de colonnes à partir du ResultSet
+                        int id = resultSet.getInt("id");
+                        String im = resultSet.getString("im");
+                        String num_tarif = resultSet.getString("num_tarif");
+                        String date = String.valueOf(resultSet.getDate("date"));
+                        String montant = resultSet.getString("montant");
+                        String nom = resultSet.getString("nom");
+                        String prenoms = resultSet.getString("prenoms");
 
-                    // Création d'un objet Payer avec les valeurs récupérées
-                    Payer payer = new Payer(id, im, num_tarif, date, montant, nom, prenoms);
-                    tempPayers.add(payer);
+                        // Création d'un objet Payer avec les valeurs récupérées
+                        Payer payer = new Payer(id, im, num_tarif, date, montant, nom, prenoms);
+                        tempPayers.add(payer);
+                    }
+
+                    // Mettre à jour la table avec les résultats de la recherche
+                    tbvPayers.setItems(FXCollections.observableArrayList(tempPayers));
                 }
-
-                // Mettre à jour la table avec les résultats de la recherche
-                tbvPayers.setItems(FXCollections.observableArrayList(tempPayers));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -127,6 +128,7 @@ public class PayerController {
             showErrorAlert("Erreur de saisie", "Veuillez sélectionner une date de début et une date de fin.");
         }
     }
+
 
 
 
