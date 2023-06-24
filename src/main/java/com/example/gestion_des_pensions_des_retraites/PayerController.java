@@ -14,6 +14,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,10 +48,10 @@ public class PayerController {
 
 
     @FXML
-    private DatePicker dpDebut;
+    private TextField dpDebut;
 
     @FXML
-    private DatePicker dpFin;
+    private TextField dpFin;
 
     @FXML
     private Button searchButton;
@@ -79,7 +80,7 @@ public class PayerController {
             }
         });
         searchButton.setOnAction(event -> {
-            if (dpDebut.getValue() == null || dpFin.getValue() == null) {
+            if (dpDebut.getText() == null || dpFin.getText() == null) {
                 loadDataFromDatabase();
             } else {
                 rechercheEntreDeuxDate();
@@ -88,33 +89,44 @@ public class PayerController {
     }
 
     private void rechercheEntreDeuxDate() {
-        LocalDate debut = dpDebut.getValue();
-        LocalDate fin = dpFin.getValue();
+        String debut = dpDebut.getText();
+        String fin = dpFin.getText();
 
         if (debut != null && fin != null) {
-            String query = "SELECT * FROM payer WHERE date >= ? AND date <= ?";
+            String query = "SELECT payer.id AS pa_id, payer.date AS pa_date, personne.im AS pe_im, tarif.num_tarif AS t_num_tarif,\n" +
+                    "       personne.nom AS pe_nom, personne.prenoms AS pe_prenoms, tarif.montant AS t_montant\n" +
+                    "FROM payer\n" +
+                    "JOIN tarif ON payer.num_tarif = tarif.num_tarif\n" +
+                    "JOIN personne ON payer.im = personne.im\n" +
+                    "WHERE date >= ? AND date <= ?\n";
             try (Connection conn = ConnectionDatabase.connect();
                  PreparedStatement statement = conn.prepareStatement(query)) {
 
-                statement.setDate(1, java.sql.Date.valueOf(debut));
-                statement.setDate(2, java.sql.Date.valueOf(fin));
+                LocalDate dateDebut = LocalDate.parse(debut, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                LocalDate dateFin = LocalDate.parse(fin, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                statement.setDate(1, java.sql.Date.valueOf(dateDebut));
+                statement.setDate(2, java.sql.Date.valueOf(dateFin));
 
                 try (ResultSet resultSet = statement.executeQuery()) {
-
                     List<Payer> tempPayers = new ArrayList<>(); // Créer une liste temporaire pour stocker les résultats de la recherche
 
                     while (resultSet.next()) {
                         // Récupération des valeurs de colonnes à partir du ResultSet
-                        int id = resultSet.getInt("id");
-                        String im = resultSet.getString("im");
-                        String num_tarif = resultSet.getString("num_tarif");
-                        String date = String.valueOf(resultSet.getDate("date"));
-                        String montant = resultSet.getString("montant");
-                        String nom = resultSet.getString("nom");
-                        String prenoms = resultSet.getString("prenoms");
+                        int id = resultSet.getInt("pa_id");
+                        int montant = resultSet.getInt("t_montant");
+                        String date = resultSet.getString("pa_date");
+                        String nom = resultSet.getString("pe_nom");
+                        String prenoms = resultSet.getString("pe_prenoms");
+                        String num_tarif = resultSet.getString("t_num_tarif");
+                        String im = resultSet.getString("pe_im");
+
+                        // Formater le montant avec des séparateurs de milliers et " Ar" à la fin
+                        NumberFormat numberFormat = new DecimalFormat("#,###");
+                        String formattedMontant = numberFormat.format(montant) + " Ar";
 
                         // Création d'un objet Payer avec les valeurs récupérées
-                        Payer payer = new Payer(id, im, num_tarif, date, montant, nom, prenoms);
+                        Payer payer = new Payer(id, im, nom, prenoms, num_tarif, date, formattedMontant);
                         tempPayers.add(payer);
                     }
 
@@ -128,6 +140,9 @@ public class PayerController {
             showErrorAlert("Erreur de saisie", "Veuillez sélectionner une date de début et une date de fin.");
         }
     }
+
+
+
 
 
 
