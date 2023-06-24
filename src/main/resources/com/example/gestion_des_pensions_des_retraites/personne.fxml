@@ -52,7 +52,7 @@
                            <columns>
                               <TableColumn fx:id="PcId" prefWidth="75.0" text="Id" visible="false" />
                               <TableColumn fx:id="PcIm" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="IM" />
-                              <TableColumn fx:id="PcNumtarif" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Numtarif" />
+                              <TableColumn fx:id="PcNumtarif" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Numtarif" visible="false" />
                               <TableColumn fx:id="PcNom" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom" />
                               <TableColumn fx:id="PcPrenoms" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prénoms" />
                               <TableColumn fx:id="PcDatenais" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Date de naissense" />
@@ -62,6 +62,7 @@
                               <TableColumn fx:id="PcSituation" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Situation" />
                               <TableColumn fx:id="PcNomconjoint" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Nom conjoint" />
                               <TableColumn fx:id="PcPrenomconjoint" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Prenom conjoint" />
+                              <TableColumn fx:id="PcMontant" maxWidth="300.0" minWidth="50.0" prefWidth="300.0" text="Montant" visible="false" />
                            </columns>
                         </TableView>
                      </center>

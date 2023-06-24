@@ -2,10 +2,13 @@ package com.example.gestion_des_pensions_des_retraites;
 
 import javafx.beans.property.*;
 
+import java.time.LocalDate;
+
 public class Personne {
     private final IntegerProperty id;
     private final StringProperty im;
     private final StringProperty numtarif;
+    private final IntegerProperty montant;
     private final StringProperty nom;
     private final StringProperty prenoms;
     private final StringProperty datenais;
@@ -16,10 +19,12 @@ public class Personne {
     private final StringProperty nomconjoint;
     private final StringProperty prenomconjoint;
 
-    public Personne(int id, String im, String numtarif, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
+
+    public Personne(int id, String im, String numtarif, int montant, String nom, String prenoms, String datenais, String situation, String statut, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.id = new SimpleIntegerProperty(id);
         this.im = new SimpleStringProperty(im);
         this.numtarif = new SimpleStringProperty(numtarif);
+        this.montant = new SimpleIntegerProperty(montant);
         this.nom = new SimpleStringProperty(nom);
         this.prenoms = new SimpleStringProperty(prenoms);
         this.datenais = new SimpleStringProperty(datenais);
@@ -29,6 +34,18 @@ public class Personne {
         this.situation = new SimpleStringProperty(situation);
         this.nomconjoint = new SimpleStringProperty(nomconjoint);
         this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
+    }
+
+    public int getMontant() {
+        return montant.get();
+    }
+
+    public IntegerProperty montantProperty() {
+        return montant;
+    }
+
+    public void setMontant(int montant) {
+        this.montant.set(montant);
     }
 
     // Getters and setters for id

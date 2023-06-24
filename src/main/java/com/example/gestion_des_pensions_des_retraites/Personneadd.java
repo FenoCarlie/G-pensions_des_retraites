@@ -6,20 +6,22 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.sql.Date;
-import java.time.LocalDate;
+import java.text.SimpleDateFormat;
 
 public class Personneadd {
     private final StringProperty im;
     private final StringProperty nom;
     private final StringProperty prenoms;
-    private final ObjectProperty<LocalDate> datenais;
     private final StringProperty contact;
     private final StringProperty diplome;
     private final StringProperty situation;
     private final StringProperty nomconjoint;
     private final StringProperty prenomconjoint;
+    private final SimpleObjectProperty<Date> datenais;
 
-    public Personneadd(String im, String nom, String prenoms, LocalDate datenais, String situation, String contact, String diplome, String nomconjoint, String prenomconjoint) {
+
+
+    public Personneadd(String im, String nom, String prenoms, Date datenais, String situation, String contact, String diplome, String nomconjoint, String prenomconjoint) {
         this.im = new SimpleStringProperty(im);
         this.nom = new SimpleStringProperty(nom);
         this.prenoms = new SimpleStringProperty(prenoms);
@@ -29,6 +31,19 @@ public class Personneadd {
         this.situation = new SimpleStringProperty(situation);
         this.nomconjoint = new SimpleStringProperty(nomconjoint);
         this.prenomconjoint = new SimpleStringProperty(prenomconjoint);
+    }
+
+
+    public Date getDatenais() {
+        return datenais.get();
+    }
+
+    public SimpleObjectProperty<Date> datenaisProperty() {
+        return datenais;
+    }
+
+    public void setDatenais(Date datenais) {
+        this.datenais.set(datenais);
     }
 
     // Getters and setters for im
@@ -110,17 +125,7 @@ public class Personneadd {
     }
 
     // Getters and setters for datenais
-    public LocalDate getDatenais() {
-        return datenais.get();
-    }
 
-    public ObjectProperty<LocalDate> datenaisProperty() {
-        return datenais;
-    }
-
-    public void setDatenais(LocalDate datenais) {
-        this.datenais.set(datenais);
-    }
 
     // Getters and setters for nomconjoint
     public String getNomconjoint() {

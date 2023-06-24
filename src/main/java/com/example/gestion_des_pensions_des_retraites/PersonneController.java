@@ -10,7 +10,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +26,8 @@ public class PersonneController {
     @FXML
     private TableColumn<Personne, String> PcNumtarif;
 
+    @FXML
+    private TableColumn<Personne, Integer> PcMontant;
 
     @FXML
     private TableColumn<Personne, String> PcDatenais;
@@ -72,6 +78,7 @@ public class PersonneController {
         personnes = FXCollections.observableArrayList();
 
         PcId.setCellValueFactory(data -> data.getValue().idProperty().asObject());
+        PcMontant.setCellValueFactory(data -> data.getValue().montantProperty().asObject());
         PcIm.setCellValueFactory(data -> data.getValue().imProperty());
         PcNumtarif.setCellValueFactory(data -> data.getValue().numtarifProperty());
         PcNom.setCellValueFactory(data -> data.getValue().nomProperty());
@@ -103,7 +110,10 @@ public class PersonneController {
 
     private void rechercherPersonnes(String searchText) {
         // Créer une requête SQL pour effectuer la recherche en utilisant LIKE
-        String query = "SELECT * FROM personne WHERE nom LIKE ? OR prenoms LIKE ? OR im LIKE ?";
+        String query = "SELECT personne.id AS p_id, personne.im AS p_im, personne.nom AS p_nom, personne.prenoms AS p_prenoms, personne.datenais AS p_datenais, personne.contact AS p_contact, personne.statut AS p_statut, personne.situation AS p_situation, personne.nomconjoint AS p_nomconjoint, personne.prenomconjoint AS p_prenomconjoint, tarif.montant AS t_montant, tarif.num_tarif AS t_num_tarif, tarif.diplome AS t_diplome\n" +
+                "FROM personne\n" +
+                "JOIN tarif ON personne.diplome = tarif.diplome\n" +
+                "WHERE personne.nom LIKE ? OR personne.prenoms LIKE ? OR personne.im LIKE ?;\n";
 
         try (Connection conn = ConnectionDatabase.connect();
              PreparedStatement statement = conn.prepareStatement(query)) {
@@ -122,22 +132,24 @@ public class PersonneController {
 
             // Parcourir les résultats de la requête et créer des objets Personne correspondants
             while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String im = resultSet.getString("im");
-                String nom = resultSet.getString("nom");
-                String prenoms = resultSet.getString("prenoms");
-                String datenais = resultSet.getString("datenais");
-                String contact = resultSet.getString("contact");
-                boolean statut = resultSet.getBoolean("statut");
-                String statutText = statut ? "vivant" : "décédé"; // Modification ici
-                String diplome = resultSet.getString("diplome");
-                String situation = resultSet.getString("situation");
-                String nomconjoint = resultSet.getString("nomconjoint");
-                String prenomconjoint = resultSet.getString("prenomconjoint");
+                int id = resultSet.getInt("p_id");
+                String im = resultSet.getString("p_im");
+                String numtarif = resultSet.getString("t_num_tarif");
+                int montant = resultSet.getInt("t_montant");
+                String nom = resultSet.getString("p_nom");
+                String prenoms = resultSet.getString("p_prenoms");
+                String datenais = resultSet.getString("p_datenais");
+                String contact = resultSet.getString("p_contact");
+                boolean statut = resultSet.getBoolean("p_statut");
+                String statutText = statut ? "vivant" : "décédé";
+                String diplome = resultSet.getString("t_diplome");
+                String situation = resultSet.getString("p_situation");
+                String nomconjoint = resultSet.getString("p_nomconjoint");
+                String prenomconjoint = resultSet.getString("p_prenomconjoint");
 
 
                 // Créer un objet Personne et l'ajouter à la liste des résultats
-                Personne personne = new Personne(id, im, numtarif, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
+                Personne personne = new Personne(id, im, numtarif, montant, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
                 resultatRecherche.add(personne);
             }
 
@@ -248,16 +260,27 @@ public class PersonneController {
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == validerButtonType) {
             String im = tfIm.getText();
-            String nom = tfNom.getText();
+            String nom = tfNom.getText().toUpperCase();
             String prenoms = tfPrenoms.getText();
-            LocalDate datenais = dpDate.getValue();
+            String datenaisString = tfdatenais.getText();
             String contact = tfContact.getText();
             String diplome = cbDiplome.getValue();
             String situation = cbSituation.getValue();
-            String nomConjoint = tfNomConjoint.getText();
-            String prenomConjoint = tfPrenomConjoint.getText();
+            String nomconjoint = tfNomConjoint.getText().toUpperCase();
+            String prenomconjoint = tfPrenomConjoint.getText();
 
-            Personneadd personne = new Personneadd(im, nom, prenoms, datenais, situation, contact, diplome, nomConjoint, prenomConjoint);
+            // Convertir la chaîne de caractères en objet java.sql.Date
+            java.sql.Date datenais = null;
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date parsedDate = dateFormat.parse(datenaisString);
+                datenais = new java.sql.Date(parsedDate.getTime());
+            } catch (ParseException e) {
+                e.printStackTrace();
+                // Gérer l'erreur de conversion de la date ici
+            }
+
+            Personneadd personne = new Personneadd(im, nom, prenoms, datenais, situation, contact, diplome, nomconjoint, prenomconjoint);
             addToDatabase(personne);
 
             loadDataFromDatabase();
@@ -298,11 +321,9 @@ public class PersonneController {
         return diplomeList;
     }
 
-
-
     private boolean validateInputs(String im, String nom, String prenom, String datenais, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
         boolean hasError = false;
-        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || datenais == null || contact.isEmpty() ||
+        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || datenais.isEmpty() || contact.isEmpty() ||
                 situation.isEmpty() || nomconjoint.isEmpty() || prenomconjoint.isEmpty()) {
             showErrorMessage("Veuillez remplir tous les champs.");
             hasError = true;
@@ -315,15 +336,27 @@ public class PersonneController {
             }
 
             if (!nomconjoint.matches("[A-Za-z\\p{L}]+")) {
-                showErrorMessage("Le nom ne doit contenir que des lettres.");
+                showErrorMessage("Le nom conjoint ne doit contenir que des lettres.");
                 hasError = true;
             } else {
                 nomconjoint = nomconjoint.toUpperCase();
+            }
+
+            // Vérifier le format de la date
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            try {
+                LocalDate.parse(datenais, dateFormatter);
+            } catch (DateTimeParseException e) {
+                showErrorMessage("Le format de la date de naissance est incorrect. Utilisez le format yyyy-MM-dd.");
+                hasError = true;
             }
         }
 
         return hasError;
     }
+
+
+
 
     private void addToDatabase(Personneadd personne) {
         try (Connection conn = ConnectionDatabase.connect()) {
@@ -346,7 +379,13 @@ public class PersonneController {
                     insertStatement.setString(1, personne.getIm());
                     insertStatement.setString(2, personne.getNom());
                     insertStatement.setString(3, personne.getPrenoms());
-                    insertStatement.setDate(4, java.sql.Date.valueOf(personne.getDatenais()));
+
+                    // Convertir la valeur de datenais en java.sql.Date
+                    Date datenais = personne.getDatenais();
+                    java.sql.Date sqlDate = new java.sql.Date(datenais.getTime());
+
+                    insertStatement.setDate(4, sqlDate);
+
                     insertStatement.setString(5, personne.getSituation());
                     insertStatement.setString(6, personne.getContact());
                     insertStatement.setString(7, personne.getDiplome());
@@ -354,6 +393,7 @@ public class PersonneController {
                     insertStatement.setString(9, personne.getPrenomconjoint());
                     insertStatement.executeUpdate();
                     insertStatement.close();
+
 
                     System.out.println("La personne a été ajoutée avec succès.");
                 }
@@ -367,7 +407,7 @@ public class PersonneController {
         }
     }
 
-    private void payerPersonne (Personne personne) {
+    private void payerPersonne(Personne personne) {
         // Créer une nouvelle fenêtre de dialogue
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Payer une personne");
@@ -375,10 +415,98 @@ public class PersonneController {
         // Création des champs de saisie
         TextField tfIm = new TextField(personne.getIm());
         tfIm.setPromptText("IM");
-        TextField tfNom = new TextField(personne.getNom());
+        TextField tfNumtarif = new TextField(personne.getNumtarif());
+        tfNumtarif.setPromptText("Numero tarif");
+        TextField tfNom = new TextField(personne.getNom().toUpperCase());
         tfNom.setPromptText("Nom");
+        TextField tfPrenoms = new TextField(personne.getPrenoms());
+        tfPrenoms.setPromptText("Prénoms");
+        TextField tfMontant = new TextField(Integer.toString(personne.getMontant()));
+        tfMontant.setPromptText("Montant");
+        // Ajouter un DatePicker pour sélectionner la date de paiement
+        DatePicker datePicker = new DatePicker();
 
+        // Créer une disposition pour organiser les éléments
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.addRow(0, new Label("IM:"), tfIm);
+        gridPane.addRow(1, new Label("Nom:"), tfNom);
+        gridPane.addRow(2, new Label("Prénoms:"), tfPrenoms);
+        gridPane.addRow(3, new Label("Montant:"), tfMontant);
+        gridPane.addRow(4, new Label("Numero tarif:"), tfNumtarif);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Ajouter les boutons "Valider" et "Annuler" à la fenêtre de dialogue
+        ButtonType validerButtonType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
+        ButtonType annulerButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(validerButtonType, annulerButtonType);
+
+        // Obtenir le bouton de validation
+        Button validerButton = (Button) dialog.getDialogPane().lookupButton(validerButtonType);
+
+        // Désactiver le bouton de validation par défaut
+        validerButton.setDefaultButton(false);
+
+        validerButton.addEventFilter(ActionEvent.ACTION, event -> {
+            payer(personne);
+        });
+
+        // Attendre que l'utilisateur appuie sur l'un des boutons
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == validerButtonType) {
+            // Récupérer les valeurs saisies par l'utilisateur
+            String im = tfIm.getText();
+            String nom = tfNom.getText();
+            String prenoms = tfPrenoms.getText();
+            int montant = Integer.parseInt(tfMontant.getText());
+
+            // Mettre à jour les propriétés de la personne
+            personne.setIm(im);
+            personne.setNom(nom);
+            personne.setPrenoms(prenoms);
+            personne.setMontant(montant);
+
+        }
     }
+
+    private void payer(Personne personne) {
+        try (Connection conn = ConnectionDatabase.connect()) {
+            if (conn != null) {
+                // Obtention de la date actuelle
+                java.sql.Date currentDate = java.sql.Date.valueOf(LocalDate.now());
+
+                // Préparation de la requête d'insertion dans la table "payer"
+                String payerQuery = "INSERT INTO payer (im, num_tarif, date) VALUES (?, ?, ?)";
+                PreparedStatement payerStatement = conn.prepareStatement(payerQuery);
+                payerStatement.setString(1, personne.getIm());
+                payerStatement.setString(2, personne.getNumtarif()); // Remplacez "num_tarif" par le nom de la colonne correspondante
+                payerStatement.setDate(3, currentDate);
+
+                // Exécution de la requête d'insertion
+                payerStatement.executeUpdate();
+
+                payerStatement.close();
+                conn.close();
+            } else {
+                showErrorMessage("Échec de la connexion à la base de données.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean inputsValide(String im, String nom, String prenoms, String montant) {
+        if (im.isEmpty() || nom.isEmpty() || prenoms.isEmpty() || montant.isEmpty()) {
+            showErrorMessage("Veuillez remplir tous les champs.");
+            return false;
+        }
+
+        return true;
+    }
+
+
 
     private void modifierPersonne(Personne personne) {
 
@@ -446,20 +574,30 @@ public class PersonneController {
         if (result.isPresent() && result.get() == validerButtonType) {
             // Effectuer la mise à jour dans la base de données
             String im = tfIm.getText();
-            String nom = tfNom.getText();
+            String nom = tfNom.getText().toUpperCase();
             String prenoms = tfPrenoms.getText();
-            String datenais = tfDatenais.getText(); // Supposons que la date est une chaîne de caractères
+            String datenaisString = tfDatenais.getText(); // Supposons que la date est une chaîne de caractères
             String contact = tfContact.getText();
             String diplome = tfDiplome.getText();
             String situation = cbSituation.getValue();
-            String nomconjoint = tfNomconjoint.getText();
+            String nomconjoint = tfNomconjoint.getText().toUpperCase();
             String prenomconjoint = tfPrenomconjoint.getText();
+
+            // Convertir la date de type String en type java.sql.Date
+            Date datenais = null;
+            try {
+                LocalDate localDate = LocalDate.parse(datenaisString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                datenais = Date.valueOf(localDate);
+            } catch (DateTimeParseException e) {
+                showErrorMessage("Le format de la date de naissance est incorrect. Utilisez le format yyyy-MM-dd.");
+                return;
+            }
 
             // Mettre à jour les propriétés de la personne
             personne.setIm(im);
             personne.setNom(nom);
             personne.setPrenoms(prenoms);
-            personne.setDatenais(datenais);
+            personne.setDatenais(String.valueOf(datenais));
             personne.setContact(contact);
             personne.setDiplome(diplome);
             personne.setSituation(situation);
@@ -535,29 +673,6 @@ public class PersonneController {
 
     }
 
-
-    private String getNumTarifForDiplome(String diplome) {
-        String numtarif = "";
-
-        // Effectuer une requête à la base de données pour récupérer le numtarif associé au diplôme
-        String query = "SELECT num_tarif FROM tarif WHERE diplome = ?";
-        try (Connection conn = ConnectionDatabase.connect();
-             PreparedStatement statement = conn.prepareStatement(query)) {
-
-            statement.setString(1, diplome);
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                numtarif = resultSet.getString("numtarif");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return numtarif;
-    }
-
     private void deleteFromDatabase(Personne personne) {
         try {
             Connection conn = ConnectionDatabase.connect();
@@ -590,26 +705,28 @@ public class PersonneController {
         try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 // Retrieve payers from the database
-                String query = "SELECT * FROM personne";
+                String query = "SELECT personne.id AS p_id, personne.im AS p_im, personne.nom AS p_nom, personne.prenoms AS p_prenoms, personne.datenais AS p_datenais, personne.contact AS p_contact, personne.statut AS p_statut, personne.situation AS p_situation, personne.nomconjoint AS p_nomconjoint, personne.prenomconjoint AS p_prenomconjoint,tarif.montant AS t_montant, tarif.num_tarif AS t_num_tarif, tarif.diplome AS t_diplome FROM personne JOIN tarif ON personne.diplome = tarif.diplome;";
                 try (PreparedStatement statement = conn.prepareStatement(query);
                      ResultSet resultSet = statement.executeQuery()) {
 
                     // Add payers to the observable list
                     while (resultSet.next()) {
-                        int id = resultSet.getInt("id");
-                        String im = resultSet.getString("im");
-                        String nom = resultSet.getString("nom");
-                        String prenoms = resultSet.getString("prenoms");
-                        String datenais = resultSet.getString("datenais");
-                        String contact = resultSet.getString("contact");
-                        boolean statut = resultSet.getBoolean("statut");
-                        String statutText = statut ? "vivant" : "décédé"; // Modification ici
-                        String diplome = resultSet.getString("diplome");
-                        String situation = resultSet.getString("situation");
-                        String nomconjoint = resultSet.getString("nomconjoint");
-                        String prenomconjoint = resultSet.getString("prenomconjoint");
+                        int id = resultSet.getInt("p_id");
+                        String im = resultSet.getString("p_im");
+                        String numtarif = resultSet.getString("t_num_tarif");
+                        int montant = resultSet.getInt("t_montant");
+                        String nom = resultSet.getString("p_nom");
+                        String prenoms = resultSet.getString("p_prenoms");
+                        String datenais = resultSet.getString("p_datenais");
+                        String contact = resultSet.getString("p_contact");
+                        boolean statut = resultSet.getBoolean("p_statut");
+                        String statutText = statut ? "vivant" : "décédé";
+                        String diplome = resultSet.getString("t_diplome");
+                        String situation = resultSet.getString("p_situation");
+                        String nomconjoint = resultSet.getString("p_nomconjoint");
+                        String prenomconjoint = resultSet.getString("p_prenomconjoint");
 
-                        Personne personne = new Personne( id, im, numtarif, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
+                        Personne personne = new Personne( id, im, numtarif, montant, nom, prenoms, datenais, situation, statutText, contact, diplome, nomconjoint, prenomconjoint);
                         personnes.add(personne);
                     }
                 } catch (SQLException e) {

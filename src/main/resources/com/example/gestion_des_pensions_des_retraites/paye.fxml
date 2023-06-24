@@ -64,11 +64,11 @@
                               <Insets left="80.0" />
                            </padding>
                            <children>
-                              <DatePicker fx:id="dpDebut" />
-                              <Label prefHeight="18.0" prefWidth="41.0" />
-                              <DatePicker fx:id="dpFin" />
-                              <Label layoutX="213.0" layoutY="25.0" prefHeight="18.0" prefWidth="41.0" />
-                              <Button fx:id="searchButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="102.0" text="Recherche" />
+                              <DatePicker fx:id="dpFin" prefHeight="36.0" prefWidth="180.0" promptText="Date du debut" />
+                              <Label prefHeight="18.0" prefWidth="39.0" />
+                              <DatePicker fx:id="dpDebut" layoutX="90.0" layoutY="16.0" prefHeight="36.0" prefWidth="180.0" promptText="date du fin" />
+                              <Label layoutX="270.0" layoutY="25.0" prefHeight="18.0" prefWidth="39.0" />
+                              <Button fx:id="searchButton" mnemonicParsing="false" prefHeight="36.0" prefWidth="122.0" text="Recherche" />
                            </children>
                         </HBox>
                      </top>

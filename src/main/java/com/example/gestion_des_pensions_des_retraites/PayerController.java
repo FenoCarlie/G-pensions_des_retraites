@@ -10,13 +10,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 public class PayerController {
 
@@ -93,37 +92,34 @@ public class PayerController {
         LocalDate fin = dpFin.getValue();
 
         if (debut != null && fin != null) {
-            // Convertir les dates en format compatible avec la base de données (par exemple, au format "yyyy-MM-dd")
-            String dateDebut = debut.toString();
-            String dateFin = fin.toString();
-
-            // Exécuter une requête SQL pour récupérer les pensions payées entre les deux dates
-            // Utilisez la clause WHERE pour filtrer les résultats en fonction des dates
             String query = "SELECT * FROM payer WHERE date >= ? AND date <= ?";
             try (Connection conn = ConnectionDatabase.connect();
                  PreparedStatement statement = conn.prepareStatement(query)) {
 
-                statement.setString(1, dateDebut);
-                statement.setString(2, dateFin);
+                statement.setDate(1, java.sql.Date.valueOf(debut));
+                statement.setDate(2, java.sql.Date.valueOf(fin));
 
                 ResultSet resultSet = statement.executeQuery();
 
-                // Traiter les résultats de la requête et afficher les pensions payées
+                List<Payer> tempPayers = new ArrayList<>(); // Créer une liste temporaire pour stocker les résultats de la recherche
+
                 while (resultSet.next()) {
+                    // Récupération des valeurs de colonnes à partir du ResultSet
                     int id = resultSet.getInt("id");
                     String im = resultSet.getString("im");
                     String num_tarif = resultSet.getString("num_tarif");
-                    String date = resultSet.getString("date");
+                    String date = String.valueOf(resultSet.getDate("date"));
                     String montant = resultSet.getString("montant");
                     String nom = resultSet.getString("nom");
                     String prenoms = resultSet.getString("prenoms");
 
+                    // Création d'un objet Payer avec les valeurs récupérées
                     Payer payer = new Payer(id, im, num_tarif, date, montant, nom, prenoms);
-                    payers.add(payer);
+                    tempPayers.add(payer);
                 }
 
-                // Fermer le ResultSet et la connexion à la base de données
-                resultSet.close();
+                // Mettre à jour la table avec les résultats de la recherche
+                tbvPayers.setItems(FXCollections.observableArrayList(tempPayers));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -131,6 +127,8 @@ public class PayerController {
             showErrorAlert("Erreur de saisie", "Veuillez sélectionner une date de début et une date de fin.");
         }
     }
+
+
 
     private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
 
