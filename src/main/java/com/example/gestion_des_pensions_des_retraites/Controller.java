@@ -10,24 +10,20 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Objects;
+import java.sql.*;
 import java.util.ResourceBundle;
 
-public class  Controller implements Initializable {
+public class Controller implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(Controller.class);
 
@@ -35,18 +31,13 @@ public class  Controller implements Initializable {
     private BorderPane bp;
 
     @FXML
-    private BorderPane ap;
+    private TableView<Acceulle> tbvHome;
 
     @FXML
     private TableColumn<Acceulle, Integer> HcEffectif;
 
     @FXML
     private TableColumn<Acceulle, String> HcStatut;
-
-    @FXML
-    private TableView<Acceulle> tbvHome;
-
-    private ObservableList<Acceulle> homes;
 
     @FXML
     private BarChart<String, Number> histogram;
@@ -57,11 +48,13 @@ public class  Controller implements Initializable {
     @FXML
     private NumberAxis yAxis;
 
+    @FXML
+    private Label labelEffectifTotal;
 
+    private ObservableList<Acceulle> homes;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
         homes = FXCollections.observableArrayList();
 
         HcStatut.setCellValueFactory(data -> data.getValue().statutProperty());
@@ -70,7 +63,7 @@ public class  Controller implements Initializable {
 
         afficherPersonnesParStatut();
 
-        // Créer et afficher l'histogramme
+        // Create and display the histogram
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Effectif par statut");
         for (Acceulle home : homes) {
@@ -78,38 +71,60 @@ public class  Controller implements Initializable {
         }
 
         histogram.getData().add(series);
+
+        updateEffectifTotalLabel();
     }
 
     @FXML
     private void home(MouseEvent event) {
-        bp.setCenter(ap);
+        bp.setCenter(tbvHome);
         afficherPersonnesParStatut();
+        updateEffectifTotalLabel();
     }
 
     @FXML
-    private void tarif(MouseEvent event){
+    private void tarif(MouseEvent event) {
         loadPage("tarif");
     }
 
     @FXML
-    private void personne(MouseEvent event){
+    private void personne(MouseEvent event) {
         loadPage("personne");
     }
 
     @FXML
-    private void paye(MouseEvent event){
+    private void paye(MouseEvent event) {
         loadPage("paye");
     }
 
     @FXML
-    private void conjoint(MouseEvent event){
+    private void conjoint(MouseEvent event) {
         loadPage("conjoint");
     }
 
-    private void afficherPersonnesParStatut() {
-        // Effacer les données existantes
-        homes.clear();
+    // Other variables and methods
 
+    private int getEffectifTotal() {
+        int effectifTotal = 0;
+        try (Connection conn = ConnectionDatabase.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM personnes")) {
+            if (rs.next()) {
+                effectifTotal = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return effectifTotal;
+    }
+
+    private void updateEffectifTotalLabel() {
+        int effectifTotal = getEffectifTotal();
+        labelEffectifTotal.setText(String.valueOf(effectifTotal));
+    }
+
+    private void afficherPersonnesParStatut() {
+        homes.clear();
         try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 String query = "SELECT statut, COUNT(*) AS effectif_total FROM personne GROUP BY statut";
@@ -118,7 +133,7 @@ public class  Controller implements Initializable {
                     while (resultSet.next()) {
                         int effectif = resultSet.getInt("effectif_total");
                         boolean statut = resultSet.getBoolean("statut");
-                        String statutText = statut ? "vivant" : "décédé"; // Modification ici
+                        String statutText = statut ? "Vivant" : "Décédé";
 
                         Acceulle home = new Acceulle(effectif, statutText);
                         homes.add(home);
@@ -132,13 +147,15 @@ public class  Controller implements Initializable {
         }
     }
 
-    private void loadPage(String page){
+    private void loadPage(String page) {
         Parent root = null;
         try {
-            root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(page + ".fxml")));
+            root = FXMLLoader.load(getClass().getResource(page + ".fxml"));
         } catch (IOException ex) {
             logger.error("Exception occurred: " + ex.getMessage(), ex);
         }
-        bp.setCenter(root);
+        if (root != null) {
+            bp.setCenter(root);
+        }
     }
 }

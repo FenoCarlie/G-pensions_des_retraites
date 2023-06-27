@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -97,6 +98,42 @@ public class PayerController {
                 rechercheEntreDeuxDate();
             }
         });
+
+        Button deleteButton = new Button("Supprimer");
+
+        // Associer la touche "Supprimer" à la méthode handleDeleteKeyPressed
+        tbvPayers.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE) {
+                handleDeleteKeyPressed();
+            }
+        });
+
+
+        // Associer la méthode supprimerPayer au bouton de suppression
+        deleteButton.setOnAction(event -> {
+            List<Payer> selectedItems = tbvPayers.getSelectionModel().getSelectedItems();
+            if (selectedItems.isEmpty()) {
+                return;
+            }
+
+            // Supprimer les éléments sélectionnés
+            for (Payer item : selectedItems) {
+                supprimerPayer(item);
+            }
+        });
+
+    }
+
+    private void handleDeleteKeyPressed() {
+        List<Payer> selectedItems = tbvPayers.getSelectionModel().getSelectedItems();
+        if (selectedItems.isEmpty()) {
+            return;
+        }
+
+        // Supprimer les éléments sélectionnés
+        for (Payer item : selectedItems) {
+            supprimerPayer(item);
+        }
     }
 
     private void rechercheEntreDeuxDate() {
@@ -474,17 +511,35 @@ public class PayerController {
         try (Connection conn = ConnectionDatabase.connect()) {
             if (conn != null) {
                 // Récupérer les payeurs depuis la base de données avec le nom et le prénom de la table personne liée
-                String query = "SELECT payer.id AS pa_id, payer.date AS pa_date,personne.im AS pe_im, tarif.num_tarif AS t_num_tarif, personne.nom AS pe_nom, personne.prenoms AS pe_prenoms, tarif.montant AS t_montant FROM payer JOIN tarif ON payer.num_tarif = tarif.num_tarif JOIN personne ON payer.im = personne.im;";
+                String query = "SELECT p.im AS pe_im, p.nom AS pe_nom, p.prenoms AS pe_prenoms, p.statut AS pe_statut, " +
+                        "tarif.montant AS t_montant, tarif.num_tarif AS t_num_tarif, c.nomconjoint AS nomconjoint, " +
+                        "c.prenomconjoint AS prenomconjoint, c.montant AS montant_conjoint, " +
+                        "payer.date, payer.id " +
+                        "FROM payer " +
+                        "JOIN tarif ON payer.num_tarif = tarif.num_tarif " +
+                        "LEFT JOIN personne p ON p.im = payer.im " +
+                        "LEFT JOIN conjoint c ON c.numpension = payer.im";
                 try (PreparedStatement statement = conn.prepareStatement(query);
                      ResultSet resultSet = statement.executeQuery()) {
 
                     // Ajouter les payeurs à la liste observable
                     while (resultSet.next()) {
-                        int id = resultSet.getInt("pa_id");
-                        int montant = resultSet.getInt("t_montant");
-                        String date = resultSet.getString("pa_date");
-                        String nom = resultSet.getString("pe_nom");
-                        String prenoms = resultSet.getString("pe_prenoms");
+                        int id = resultSet.getInt("id");
+                        int montant;
+                        String nom, prenoms;
+                        boolean statut = resultSet.getBoolean("pe_statut");
+
+                        if (statut) {
+                            montant = resultSet.getInt("t_montant");
+                            nom = resultSet.getString("pe_nom");
+                            prenoms = resultSet.getString("pe_prenoms");
+                        } else {
+                            montant = resultSet.getInt("montant_conjoint");
+                            nom = resultSet.getString("nomconjoint");
+                            prenoms = resultSet.getString("prenomconjoint");
+                        }
+
+                        String date = resultSet.getString("date");
                         String num_tarif = resultSet.getString("t_num_tarif");
                         String im = resultSet.getString("pe_im");
 
@@ -507,4 +562,5 @@ public class PayerController {
             e.printStackTrace();
         }
     }
+
 }

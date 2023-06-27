@@ -103,6 +103,8 @@ public class PersonneController {
             String searchText = filterField.getText().toUpperCase(); // Convertir le texte en majuscules
             rechercherPersonnes(searchText);
         });
+
+
     }
 
     private void rechercherPersonnes(String searchText) {
@@ -300,7 +302,7 @@ public class PersonneController {
         validerButton.setDefaultButton(false);
 
         validerButton.addEventFilter(ActionEvent.ACTION, event -> {
-            if (validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), tfdatenais.getText(),
+            if (!validateInputs(tfIm.getText(), tfNom.getText(), tfPrenoms.getText(), tfdatenais.getText(),
                     cbDiplome.getValue(), tfContact.getText(), cbSituation.getValue(),
                     tfNomConjoint.getText(), tfPrenomConjoint.getText())) {
                 event.consume();
@@ -373,8 +375,7 @@ public class PersonneController {
 
     private boolean validateInputs(String im, String nom, String prenom, String datenais, String contact, String diplome, String situation, String nomconjoint, String prenomconjoint) {
         boolean hasError = false;
-        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || datenais.isEmpty() || contact.isEmpty() ||
-                situation.isEmpty() || nomconjoint.isEmpty() || prenomconjoint.isEmpty()) {
+        if (im.isEmpty() || nom.isEmpty() || prenom.isEmpty() || datenais.isEmpty() || contact.isEmpty() || situation.isEmpty()) {
             showErrorMessage("Veuillez remplir tous les champs.");
             hasError = true;
         } else {
@@ -385,11 +386,26 @@ public class PersonneController {
                 nom = nom.toUpperCase();
             }
 
-            if (!nomconjoint.matches("[A-Za-z\\p{L}]+")) {
-                showErrorMessage("Le nom conjoint ne doit contenir que des lettres.");
-                hasError = true;
-            } else {
-                nomconjoint = nomconjoint.toUpperCase();
+            if (situation.equals("marié(e)")) {
+                if (!nomconjoint.matches("[A-Za-z\\p{L}]+")) {
+                    showErrorMessage("Le nom conjoint ne doit contenir que des lettres.");
+                    hasError = true;
+                } else {
+                    nomconjoint = nomconjoint.toUpperCase();
+                }
+
+                if (prenomconjoint.isEmpty()) {
+                    showErrorMessage("Veuillez saisir le prénom du conjoint.");
+                    hasError = true;
+                }
+            } else if (situation.equals("divorcé(e)")) {
+                nomconjoint = "";
+                prenomconjoint = "";
+            } else if (situation.equals("veuf(ve)")) {
+                if (!nomconjoint.isEmpty() || !prenomconjoint.isEmpty()) {
+                    showErrorMessage("Les champs Nom conjoint et Prénom conjoint doivent être vides pour la situation 'veuf(ve)'.");
+                    hasError = true;
+                }
             }
 
             // Vérifier le format de la date
@@ -404,6 +420,8 @@ public class PersonneController {
 
         return hasError;
     }
+
+
 
 
 
