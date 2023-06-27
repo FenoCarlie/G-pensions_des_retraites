@@ -1,5 +1,7 @@
 package com.example.gestion_des_pensions_des_retraites;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -10,14 +12,23 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
-import java.sql.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+
+
 public class PayerController {
 
     @FXML
@@ -141,12 +152,6 @@ public class PayerController {
         }
     }
 
-
-
-
-
-
-
     private ContextMenu contextMenu; // Déclarez une variable de classe pour stocker le menu contextuel
 
     private void showContextMenu(MouseEvent event) {
@@ -171,6 +176,10 @@ public class PayerController {
             supprimerMenuItem.setOnAction(e -> supprimerPayer(selectedPayer));
             contextMenu.getItems().add(supprimerMenuItem);
 
+            MenuItem pdfMenuItem = new MenuItem("Générer un recu ");
+            pdfMenuItem.setOnAction(e -> generatePDF(selectedPayer));
+            contextMenu.getItems().add(pdfMenuItem);
+
             contextMenu.show(tbvPayers, event.getScreenX(), event.getScreenY());
 
             // Gérer l'événement de clic droit pour masquer le menu contextuel
@@ -184,6 +193,63 @@ public class PayerController {
             });
         }
     }
+
+    private void generatePDF(Payer payer) {
+        // Créer un nouveau document PDF
+        Document document = new Document();
+
+        try {
+            // Spécifier le chemin de destination du fichier PDF
+            String outputPath = "/home/bozer/Documents/reçu de " + payer.getNom() + ".pdf";
+
+            // Créer un écrivain PDF pour écrire le contenu dans le document
+            PdfWriter.getInstance(document, new FileOutputStream(outputPath));
+
+            // Ouvrir le document pour commencer à écrire
+            document.open();
+
+            // Ajouter un titre au document
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+            Paragraph title = new Paragraph("Reçu de pension", titleFont);
+            title.setAlignment(Paragraph.ALIGN_CENTER);
+            document.add(title);
+
+            String numeroIM = payer.getIm();
+            String nom = payer.getNom();
+            String prenoms = payer.getPrenoms();
+            String mois = payer.getMois();
+            String annee = payer.getAnnee();
+            String montant = payer.getMontant();
+
+
+            // Contenu du reçu
+            Paragraph numeroIMParagraphe = new Paragraph("IM : " + numeroIM);
+            Paragraph nomParagraphe = new Paragraph("Nom : " + nom);
+            Paragraph prenomsParagraphe = new Paragraph("Prénoms : " + prenoms);
+            Paragraph moisParagraphe = new Paragraph("Mois : " + mois);
+            Paragraph anneeParagraphe = new Paragraph("Année : " + annee);
+            Paragraph montantParagraphe = new Paragraph("Montant : " + montant);
+
+            // Ajouter les paragraphes au document
+            document.add(numeroIMParagraphe);
+            document.add(nomParagraphe);
+            document.add(prenomsParagraphe);
+            document.add(moisParagraphe);
+            document.add(anneeParagraphe);
+            document.add(montantParagraphe);
+
+
+            // Fermer le document une fois l'écriture terminée
+            document.close();
+
+            System.out.println("Le fichier PDF a été généré avec succès.");
+
+        } catch (FileNotFoundException | DocumentException e) {
+            e.printStackTrace();
+            System.out.println("Une erreur s'est produite lors de la génération du fichier PDF.");
+        }
+    }
+
 
     private void modifierPayer(Payer payer) {
         // Créer une nouvelle fenêtre de dialogue
@@ -423,8 +489,10 @@ public class PayerController {
                         String im = resultSet.getString("pe_im");
 
                         // Formater le montant avec des séparateurs de milliers et " Ar" à la fin
-                        NumberFormat numberFormat = new DecimalFormat("#,###");
-                        String formattedMontant = numberFormat.format(montant) + " Ar";
+                        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ENGLISH);
+                        symbols.setGroupingSeparator('.');
+                        NumberFormat numberFormat = new DecimalFormat("#,##0.###", symbols);
+                        String formattedMontant = numberFormat.format((double) montant) + " Ar";
 
                         Payer payer = new Payer(id, im, nom, prenoms, num_tarif, date, formattedMontant);
                         payers.add(payer);

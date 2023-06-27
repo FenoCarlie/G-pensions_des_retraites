@@ -65,9 +65,6 @@ public class PersonneController {
     @FXML
     private TableView<Personne> tbvPersonnes;
 
-    @FXML
-    private DatePicker dpDate;
-
     private ObservableList<Personne> personnes;
 
     @FXML
@@ -180,7 +177,15 @@ public class PersonneController {
 
             contextMenu = new ContextMenu();
 
+            // Option Sélectionner (pour les personnes vivantes)
+            if (selectedPersonne.getStatut().equalsIgnoreCase("vivant")) {
+                MenuItem selectionnerMenuItem = new MenuItem("Marquer comme décédé");
+                selectionnerMenuItem.setOnAction(e -> decederPersonne(selectedPersonne));
+                contextMenu.getItems().add(selectionnerMenuItem);
+            }
+
             // Option Modifier
+
             MenuItem modifierMenuItem = new MenuItem("Modifier");
             modifierMenuItem.setOnAction(e -> modifierPersonne(selectedPersonne));
             contextMenu.getItems().add(modifierMenuItem);
@@ -208,6 +213,51 @@ public class PersonneController {
             });
         }
     }
+
+    private void decederPersonne(Personne selectedPersonne) {
+        try (Connection conn = ConnectionDatabase.connect()) {
+            if (conn != null) {
+                // Récupérer les informations du conjoint
+                String numpension = selectedPersonne.getIm();
+                String nomconjoint = selectedPersonne.getNomconjoint();
+                String prenomconjoint = selectedPersonne.getPrenomconjoint();
+                int montant = selectedPersonne.getMontant();
+                int montantConjoint = (int) (montant * 0.4); // Calculer 40% du montant
+
+                // Modifier le statut de la personne dans la base de données
+                String updateQuery = "UPDATE personne SET statut = false WHERE id = ?";
+                try (PreparedStatement updateStatement = conn.prepareStatement(updateQuery)) {
+                    updateStatement.setInt(1, selectedPersonne.getId());
+                    updateStatement.executeUpdate();
+                    updateStatement.close();
+
+                    // Insérer les informations du conjoint dans la table "conjoint"
+                    String insertQuery = "INSERT INTO conjoint (numpension, nomconjoint, prenomconjoint, montant) VALUES (?, ?, ?, ?)";
+                    try (PreparedStatement insertStatement = conn.prepareStatement(insertQuery)) {
+                        insertStatement.setString(1, numpension);
+                        insertStatement.setString(2, nomconjoint);
+                        insertStatement.setString(3, prenomconjoint);
+                        insertStatement.setInt(4, montantConjoint);
+                        insertStatement.executeUpdate();
+                        insertStatement.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Mettre à jour le statut de la personne dans la liste observable
+                    selectedPersonne.setStatut("décédé");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                showErrorMessage("Échec de la connexion à la base de données.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @FXML
     private void ajouterPersonne() {
@@ -467,7 +517,6 @@ public class PersonneController {
             personne.setNom(nom);
             personne.setPrenoms(prenoms);
             personne.setMontant(montant);
-
         }
     }
 
@@ -680,14 +729,32 @@ public class PersonneController {
             if (conn != null) {
                 System.out.println("La connexion à la base de données a été établie avec succès.");
 
-                // Supprimer le tarif
-                String deleteQuery = "DELETE FROM personne WHERE id = ?";
-                PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
-                deleteStatement.setInt(1, personne.getId());
-                deleteStatement.executeUpdate();
-                deleteStatement.close();
+                // Vérifier si l'IM existe dans la table "payer"
+                String selectQuery = "SELECT COUNT(*) FROM payer WHERE im = ?";
+                try (PreparedStatement selectStatement = conn.prepareStatement(selectQuery)) {
+                    selectStatement.setString(1, personne.getIm());
+                    ResultSet resultSet = selectStatement.executeQuery();
+                    resultSet.next();
+                    int count = resultSet.getInt(1);
 
-                System.out.println("La paye a été supprimé avec succès.");
+                    if (count > 0) {
+                        // Supprimer les occurrences de l'IM dans la table "payer"
+                        String deletePayerQuery = "DELETE FROM payer WHERE im = ?";
+                        try (PreparedStatement deletePayerStatement = conn.prepareStatement(deletePayerQuery)) {
+                            deletePayerStatement.setString(1, personne.getIm());
+                            deletePayerStatement.executeUpdate();
+                            System.out.println("Les occurrences dans la table 'payer' ont été supprimées avec succès.");
+                        }
+                    }
+
+                    // Supprimer la personne de la table "personne"
+                    String deletePersonneQuery = "DELETE FROM personne WHERE im = ?";
+                    try (PreparedStatement deletePersonneStatement = conn.prepareStatement(deletePersonneQuery)) {
+                        deletePersonneStatement.setString(1, personne.getIm());
+                        deletePersonneStatement.executeUpdate();
+                        System.out.println("La personne a été supprimée avec succès de la table 'personne'.");
+                    }
+                }
 
                 conn.close();
             } else {

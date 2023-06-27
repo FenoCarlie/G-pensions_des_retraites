@@ -310,6 +310,7 @@ public class TarifController {
         }
     }
 
+
     private boolean validateInputs(String numero, String diplome, String categorie, String montant) {
         // Vérifier si les champs sont vides
         if (numero.isEmpty() || diplome.isEmpty() || categorie.isEmpty() || montant.isEmpty()) {

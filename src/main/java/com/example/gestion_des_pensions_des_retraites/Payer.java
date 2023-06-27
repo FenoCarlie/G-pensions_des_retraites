@@ -2,6 +2,12 @@ package com.example.gestion_des_pensions_des_retraites;
 
 import javafx.beans.property.*;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
+
 public class Payer {
     private final IntegerProperty id;
     private final StringProperty im;
@@ -10,6 +16,8 @@ public class Payer {
     private final StringProperty date;
     private final StringProperty num_tarif;
     private final StringProperty montant;
+    private final StringProperty mois;
+    private final StringProperty annee;
 
     public Payer(int id, String im, String nom, String prenoms, String num_tarif, String date, String montant) {
         this.id = new SimpleIntegerProperty(id);
@@ -19,6 +27,17 @@ public class Payer {
         this.date = new SimpleStringProperty(date);
         this.num_tarif = new SimpleStringProperty(num_tarif);
         this.montant = new SimpleStringProperty(montant);
+
+        // Convertir la date en LocalDate
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+
+        // Extraire le mois et l'année de la date
+        String mois = String.valueOf(localDate.getMonthValue());
+        String annee = String.valueOf(localDate.getYear());
+
+        // Définir le mois et l'année
+        this.mois = new SimpleStringProperty(mois);
+        this.annee = new SimpleStringProperty(annee);
     }
 
     // Getter for num_tarif property
@@ -111,8 +130,25 @@ public class Payer {
         return im;
     }
 
-    // Getter method for the ObjectProperty
     public StringProperty dateProperty() {
         return date;
+    }
+
+    // Getter methods for mois and annee
+    public String getMois() {
+        int moisValue = Integer.parseInt(mois.get());
+        return Month.of(moisValue).getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public String getAnnee() {
+        return annee.get();
+    }
+
+    public StringProperty moisProperty() {
+        return mois;
+    }
+
+    public StringProperty anneeProperty() {
+        return annee;
     }
 }
