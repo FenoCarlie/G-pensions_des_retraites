@@ -14,6 +14,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Optional;
 
 public class TarifController {
@@ -407,6 +411,7 @@ public class TarifController {
                     Tarif tarif = new Tarif(id, numero, diplome, categorie, montant);
                     tarifs.add(tarif);
                 }
+
 
                 // Fermer les ressources
                 resultSet.close();

@@ -386,28 +386,6 @@ public class PersonneController {
                 nom = nom.toUpperCase();
             }
 
-            if (situation.equals("marié(e)")) {
-                if (!nomconjoint.matches("[A-Za-z\\p{L}]+")) {
-                    showErrorMessage("Le nom conjoint ne doit contenir que des lettres.");
-                    hasError = true;
-                } else {
-                    nomconjoint = nomconjoint.toUpperCase();
-                }
-
-                if (prenomconjoint.isEmpty()) {
-                    showErrorMessage("Veuillez saisir le prénom du conjoint.");
-                    hasError = true;
-                }
-            } else if (situation.equals("divorcé(e)")) {
-                nomconjoint = "";
-                prenomconjoint = "";
-            } else if (situation.equals("veuf(ve)")) {
-                if (!nomconjoint.isEmpty() || !prenomconjoint.isEmpty()) {
-                    showErrorMessage("Les champs Nom conjoint et Prénom conjoint doivent être vides pour la situation 'veuf(ve)'.");
-                    hasError = true;
-                }
-            }
-
             // Vérifier le format de la date
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             try {

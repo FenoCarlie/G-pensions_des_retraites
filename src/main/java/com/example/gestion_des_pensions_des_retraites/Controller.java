@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,9 @@ public class Controller implements Initializable {
 
     @FXML
     private BorderPane bp;
+
+    @FXML
+    private AnchorPane ap;
 
     @FXML
     private TableView<Acceulle> tbvHome;
@@ -77,7 +81,7 @@ public class Controller implements Initializable {
 
     @FXML
     private void home(MouseEvent event) {
-        bp.setCenter(tbvHome);
+        bp.setCenter(ap);
         afficherPersonnesParStatut();
         updateEffectifTotalLabel();
     }
@@ -108,9 +112,10 @@ public class Controller implements Initializable {
         int effectifTotal = 0;
         try (Connection conn = ConnectionDatabase.connect();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM personnes")) {
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM personne")) {
             if (rs.next()) {
                 effectifTotal = rs.getInt("total");
+                //System.out.println(rs.getInt("total"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

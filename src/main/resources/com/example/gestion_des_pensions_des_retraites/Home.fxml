@@ -93,9 +93,9 @@
       </HBox>
    </top>
    <center>
-      <BorderPane fx:id="ap" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <top>
-            <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="1278.0" style="-fx-background-color: #1a3657;" BorderPane.alignment="CENTER">
+      <AnchorPane fx:id="ap" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #F5F5FA;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="67.0" prefWidth="1278.0" style="-fx-background-color: #1a3657;">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
@@ -113,41 +113,35 @@
                   </Label>
                </children>
             </HBox>
-         </top>
-         <center>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #F5F5FA;" BorderPane.alignment="CENTER">
+            <TableView fx:id="tbvHome" layoutX="717.0" layoutY="111.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="115.0" prefWidth="447.0" stylesheets="@styling.css">
+               <columns>
+                  <TableColumn fx:id="HcStatut" maxWidth="308.0" minWidth="20.0" prefWidth="305.0" text="Statut" />
+                  <TableColumn fx:id="HcEffectif" maxWidth="140.0" prefWidth="299.0" text="Effectif total" />
+               </columns>
+            </TableView>
+            <BarChart fx:id="histogram" layoutX="58.0" layoutY="239.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+               <xAxis>
+                  <CategoryAxis label="Statut" fx:id="xAxis" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis fx:id="yAxis" label="Effectif" />
+               </yAxis>
+            </BarChart>
+            <HBox alignment="CENTER" layoutX="58.0" layoutY="108.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="118.0" prefWidth="330.0" style="-fx-background-color: grey; -fx-border-radius: 25Px; -fx-background-radius: 25px;">
                <children>
-                  <TableView fx:id="tbvHome" layoutX="727.0" layoutY="205.0" prefHeight="115.0" prefWidth="447.0" stylesheets="@styling.css">
-                     <columns>
-                        <TableColumn fx:id="HcStatut" maxWidth="308.0" minWidth="20.0" prefWidth="305.0" text="Statut" />
-                        <TableColumn fx:id="HcEffectif" maxWidth="140.0" prefWidth="299.0" text="Effectif total" />
-                     </columns>
-                  </TableView>
-                  <BarChart fx:id="histogram" layoutX="58.0" layoutY="205.0" prefHeight="400.0" prefWidth="600.0">
-                     <xAxis>
-                        <CategoryAxis label="Statut" fx:id="xAxis" />
-                     </xAxis>
-                     <yAxis>
-                        <NumberAxis fx:id="yAxis" label="Effectif" />
-                     </yAxis>
-                  </BarChart>
-                  <HBox alignment="CENTER" layoutX="58.0" layoutY="37.0" prefHeight="118.0" prefWidth="330.0" style="-fx-background-color: grey; -fx-border-radius: 25Px; -fx-background-radius: 25px;">
-                     <children>
-                        <Label prefHeight="44.0" prefWidth="271.0" text="perssonne inscrit">
-                           <font>
-                              <Font size="26.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="labelEffectifTotal" layoutX="40.0" layoutY="47.0" prefHeight="44.0" prefWidth="40.0">
-                           <font>
-                              <Font size="26.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </HBox>
+                  <Label prefHeight="44.0" prefWidth="271.0" text="perssonne inscrit">
+                     <font>
+                        <Font size="26.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelEffectifTotal" layoutX="40.0" layoutY="47.0" prefHeight="44.0" prefWidth="40.0">
+                     <font>
+                        <Font size="26.0" />
+                     </font>
+                  </Label>
                </children>
-            </AnchorPane>
-         </center>
-      </BorderPane>
+            </HBox>
+         </children>
+      </AnchorPane>
    </center>
 </BorderPane>
